@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "requireit"
+description = "Tiny runtime validators for explicit precondition checks"
+authors = [
+  {name = "Eric Hutton", email = "mcflugen@gmail.com"},
+]
+maintainers = [
+  {name = "Eric Hutton", email = "mcflugen@gmail.com"},
+]
+keywords = [
+  "preconditions",
+  "runtime-checks",
+  "utilities",
+  "validation",
+]
+license = "MIT"
+license-files = ["LICENSE.md"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+]
+dynamic = ["readme", "version"]
+
+[project.urls]
+homepage = "https://github.com/mcflugen/requireit"
+documentation = "https://github.com/mcflugen/requireit/blob/main/README.md"
+repository = "https://github.com/mcflugen/requireit"
+changelog = "https://github.com/mcflugen/requireit/blob/main/CHANGES.md"
+
+[project.optional-dependencies]
+dev = ["nox"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["requireit"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "AUTHORS.md", "CHANGES.md"], content-type="text/markdown"}
+version = {attr = "requireit.__version__"}
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests", "src/requireit.py"]
+norecursedirs = [".*", "*.egg*", "build", "dist", "utilities"]
+addopts = [
+  "--ignore=setup.py",
+  "--tb=native",
+  "--strict-config",
+  "--strict-markers",
+  "--durations=16",
+  "--doctest-modules",
+  "-vvv",
+]
+doctest_optionflags = [
+  "NORMALIZE_WHITESPACE",
+  "IGNORE_EXCEPTION_DETAIL",
+  "ALLOW_UNICODE"
+]
+
+[tool.isort]
+combine_as_imports = true
+profile = "black"
