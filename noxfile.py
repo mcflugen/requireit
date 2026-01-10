@@ -1,0 +1,109 @@
+from __future__ import annotations
+
+import glob
+import os
+import shutil
+
+import nox
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+
+nox.options.sessions = ("lint", "coverage")
+
+
+@nox.session
+def lint(session: nox.Session) -> None:
+    """Run the linters."""
+    session.install("pre-commit")
+    session.run("pre-commit", "run", "--all-files")
+
+
+@nox.session
+def coverage(session: nox.Session) -> None:
+    """Run coverage."""
+    session.install("coverage", "pytest")
+    session.install("-e", ".")
+
+    session.run(
+        "coverage",
+        "run",
+        "-m",
+        "pytest",
+        "src/requireit.py",
+        "tests",
+        "--doctest-modules",
+        env={"COVERAGE_CORE": "sysmon"},
+    )
+
+    session.run("coverage", "report", "--ignore-errors", "--show-missing")
+    if "CI" in os.environ:
+        session.run("coverage", "xml", "-o", "coverage.xml")
+
+
+@nox.session
+def build(session: nox.Session) -> None:
+    """Build sdist and wheel dists."""
+    dists = _build(session, dest=os.path.join(ROOT, "dist"))
+    for dist in dists:
+        session.log(f"✅ {dist}")
+
+
+@nox.session
+def install(session: nox.Session) -> None:
+    """Install package from source or, optionally, from a wheel."""
+    _install_from_path(session, path=session.posargs[0] if session.posargs else None)
+
+
+@nox.session
+def test(session: nox.Session) -> None:
+    """Run the tests."""
+    _test(session, path=None)
+
+
+@nox.session(name="test-build")
+def test_build(session: nox.Session) -> None:
+    """Run the tests on a distribution."""
+    dist_files = _build(session, dest=os.path.join(ROOT, "dist"))
+
+    if len(dist_files) == 0:
+        session.error("no distributions were built")
+
+    session.log(f"✅ testing... {dist_files[0]}")
+    _test(session, path=dist_files[0])
+
+
+def _test(session: nox.Session, path=None) -> None:
+    session.install("pytest")
+    _install_from_path(session, path=path)
+    session.run("pytest", "--doctest-modules", "--pyargs", "requireit", "tests/")
+
+
+def _build(session: nox.Session, dest=".") -> tuple[str, ...]:
+    session.install("build")
+
+    tmpdir = session.create_tmp()
+    session.run("python", "-m", "build", "--outdir", tmpdir)
+
+    wheels = glob.glob(os.path.join(tmpdir, "*.whl"))
+    sdists = glob.glob(os.path.join(tmpdir, "*.tar.gz"))
+
+    for src in wheels + sdists:
+        shutil.copy2(src, dest)
+
+    return tuple(os.path.join(dest, os.path.basename(f)) for f in wheels + sdists)
+
+
+def _install_from_path(session: nox.Session, path: str | None = None) -> None:
+    if path is None:
+        session.install("-e", ".")
+    elif os.path.isfile(path):
+        session.install(path)
+    elif os.path.isdir(path):
+        session.install(
+            "requireit",
+            f"--find-links={path}",
+            "--no-deps",
+            "--no-index",
+        )
+    else:
+        session.error("path must be a source distribution or folder")
