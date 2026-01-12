@@ -57,7 +57,7 @@ def install(session: nox.Session) -> None:
 @nox.session
 def test(session: nox.Session) -> None:
     """Run the tests."""
-    _test(session, path=None)
+    _test(session, path=session.posargs[0] if session.posargs else None)
 
 
 @nox.session(name="test-build")
@@ -87,10 +87,15 @@ def _build(session: nox.Session, dest=".") -> tuple[str, ...]:
     wheels = glob.glob(os.path.join(tmpdir, "*.whl"))
     sdists = glob.glob(os.path.join(tmpdir, "*.tar.gz"))
 
-    for src in wheels + sdists:
-        shutil.copy2(src, dest)
+    os.makedirs(dest, exist_ok=True)
 
-    return tuple(os.path.join(dest, os.path.basename(f)) for f in wheels + sdists)
+    copied = []
+    for src in wheels + sdists:
+        fname = os.path.join(dest, os.path.basename(src))
+        shutil.copy2(src, fname)
+        copied.append(fname)
+
+    return tuple(copied)
 
 
 def _install_from_path(session: nox.Session, path: str | None = None) -> None:

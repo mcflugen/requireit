@@ -1,0 +1,140 @@
+name: CI
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  check-tag:
+    # Run on external PRs, but not on internal PRs, to avoid duplicate runs
+    if: |
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-latest
+    outputs:
+      publish_url: ${{ steps.check-publish.outputs.publish_url }}
+
+    steps:
+      - name: Check if this is a release/prerelease
+        id: check-publish
+        run: |
+          tag_name="${GITHUB_REF#refs/tags/}"
+          if [[ "$tag_name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\.dev[0-9]+$ ]]; then
+            publish_url="https://test.pypi.org/legacy/"
+          elif [[ "$tag_name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            publish_url="https://upload.pypi.org/legacy/"
+          else
+            publish_url="none"
+          fi
+          echo "publish_url=$publish_url" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$tag_name"
+          echo "publish_url=$publish_url"
+
+  build-dist:
+    name: Build source distribution
+    needs: check-tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Build sdist
+        run: |
+          pip install nox
+          nox -s build
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: build-dist
+          path: ${{ github.workspace }}/dist/
+          if-no-files-found: error
+
+  test:
+    needs: build-dist
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/download-artifact@v7
+        name: Download build artifacts
+        with:
+          pattern: "build-*"
+          merge-multiple: true
+          path: ${{ github.workspace }}/dist
+
+      - name: Test
+        run: |
+          pip install nox
+          nox -s test -- dist/*.whl
+
+  coverage:
+    needs: build-dist
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Test
+        run: |
+          pip install nox
+          nox -s coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: mcflugen/requireit
+
+  publish:
+    needs:
+      - check-tag
+      - coverage
+      - test
+    name: "Publish to PyPI/TestPyPI"
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: "build-*"
+          merge-multiple: true
+          path: ${{ github.workspace }}/dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ startsWith(needs.check-tag.outputs.publish_url, 'http') }}
+        with:
+          repository-url: ${{ needs.check-tag.outputs.publish_url }}
+          skip-existing: true
+          print-hash: true
+          verify-metadata: false
