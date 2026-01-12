@@ -57,7 +57,7 @@ def install(session: nox.Session) -> None:
 @nox.session
 def test(session: nox.Session) -> None:
     """Run the tests."""
-    _test(session, path=None)
+    _test(session, path=session.posargs[0] if session.posargs else None)
 
 
 @nox.session(name="test-build")
