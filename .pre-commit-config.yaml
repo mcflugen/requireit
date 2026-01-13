@@ -18,6 +18,7 @@ repos:
   - id: blackdoc
     description: "Black for doctests"
     additional_dependencies: ["black==25.9.0"]
+    exclude: ^README\.md$
   - id: blackdoc-autoupdate-black
 
 - repo: https://github.com/pycqa/flake8
