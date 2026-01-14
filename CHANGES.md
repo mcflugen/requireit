@@ -10,3 +10,4 @@
 - Added unit tests for `requireit` [#6](https://github.com/mcflugen/requireit/issues/6)
 - Added GitHub Actions for CI [#7](https://github.com/mcflugen/requireit/issues/7)
 - Standardized validation error messages [#8](https://github.com/mcflugen/requireit/issues/8)
+- Renamed ``validate_array`` to ``require_array`` [#9](https://github.com/mcflugen/requireit/issues/9)
