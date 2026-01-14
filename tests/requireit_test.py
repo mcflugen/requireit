@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -10,6 +12,23 @@ from requireit import require_nonnegative
 from requireit import require_nonpositive
 from requireit import require_one_of
 from requireit import require_positive
+
+
+@pytest.mark.parametrize(
+    "require",
+    (
+        pytest.param(partial(require_between, -1, 0, 1), id="between-below"),
+        pytest.param(partial(require_between, 2, 0, 1), id="between-above"),
+        pytest.param(partial(require_negative, 0), id="negative-0"),
+        pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
+        pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
+        pytest.param(partial(require_one_of, "foo", allowed=("bar",)), id="one_of-foo"),
+        pytest.param(partial(require_positive, 0), id="positive-0"),
+    ),
+)
+def test_require_with_name(require):
+    with pytest.raises(ValidationError, match="^foobar"):
+        require(name="foobar")
 
 
 @pytest.mark.parametrize(
