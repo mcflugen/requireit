@@ -46,11 +46,11 @@ def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
     >>> require_one_of("baz", allowed=("foo", "bar"))
     Traceback (most recent call last):
     ...
-    requireit.ValidationError: invalid value: 'baz' is not one of 'bar', 'foo'
+    requireit.ValidationError: value must be one of 'bar', 'foo'
     >>> require_one_of("Foo", allowed=("foo", "bar"))
     Traceback (most recent call last):
     ...
-    requireit.ValidationError: invalid value: 'Foo' is not one of 'bar', 'foo'
+    requireit.ValidationError: value must be one of 'bar', 'foo'
     """
     name = "value"
 
@@ -293,7 +293,7 @@ def validate_array(
     >>> validate_array(np.array([1, 2, 3, 4]), shape=(2, 2))
     Traceback (most recent call last):
     ...
-    requireit.ValidationError: incorrect shape: expected (2, 2), got (4,)
+    requireit.ValidationError: array must have shape (2, 2)
     """
     name = "array"
 
