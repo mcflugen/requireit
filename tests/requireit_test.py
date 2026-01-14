@@ -1,3 +1,4 @@
+import re
 from functools import partial
 
 import numpy as np
@@ -182,9 +183,11 @@ def test_require_dtype_accepts_multiple_specifiers(array, dtype):
         ([1, 2, 3], bool),
     ),
 )
-def test_require_dtype_mismatch_raises(array, dtype):
-    with pytest.raises(ValidationError, match="^array must have dtype"):
-        require_array(np.asarray(array), dtype=dtype)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_dtype_mismatch_raises(array, dtype, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must have dtype"):
+        require_array(np.asarray(array), dtype=dtype, name=name)
 
 
 @pytest.mark.parametrize(
@@ -195,9 +198,11 @@ def test_require_dtype_mismatch_raises(array, dtype):
         ([[0, 0], [0, 0], [0, 0]], (6,)),
     ],
 )
-def test_require_shape_mismatch(array, shape):
-    with pytest.raises(ValidationError, match="^array must have shape"):
-        require_array(np.asarray(array), shape=shape)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_shape_mismatch(array, shape, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must have shape"):
+        require_array(np.asarray(array), shape=shape, name=name)
 
 
 def test_require_requires_writable_passes_when_writable():
@@ -206,11 +211,14 @@ def test_require_requires_writable_passes_when_writable():
     assert actual is x
 
 
-def test_require_requires_writable_raises_when_readonly():
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_requires_writable_raises_when_readonly(name):
     x = np.arange(5)
     x.setflags(write=False)
-    with pytest.raises(ValidationError, match="^array must be writable"):
-        require_array(x, writable=True)
+
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must be writable"):
+        require_array(x, writable=True, name=name)
 
 
 @pytest.mark.parametrize("array", ([1, 2, 3], [], [[1, 2, 3], [4, 5, 6]]))
@@ -228,6 +236,8 @@ def test_require_contiguous_requirement_passes_for_c_contiguous(array):
         np.arange(12).reshape((3, 4))[:, ::2],
     ),
 )
-def test_require_contiguous_requirement_raises_for_noncontiguous(array):
-    with pytest.raises(ValidationError, match="^array must be contiguous"):
-        require_array(array, contiguous=True)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_contiguous_requirement_raises_for_noncontiguous(array, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must be contiguous"):
+        require_array(array, contiguous=True, name=name)
