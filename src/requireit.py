@@ -19,7 +19,9 @@ class ValidationError(RequireItError):
     """Error to indicate that a validation has failed."""
 
 
-def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
+def require_one_of(
+    value: Any, *, allowed: Iterable[Any], name: str | None = None
+) -> Any:
     """Validate that ``value`` is one of ``allowed``.
 
     Parameters
@@ -74,6 +76,7 @@ def require_between(
     *,
     inclusive_min: bool = True,
     inclusive_max: bool = True,
+    name: str | None = None,
 ) -> ArrayLike:
     """Validate that a value lies within a specified interval.
 
@@ -130,7 +133,7 @@ def require_between(
     return value
 
 
-def require_positive(value: ArrayLike) -> ArrayLike:
+def require_positive(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is strictly greater than zero.
 
     Parameters
@@ -157,10 +160,10 @@ def require_positive(value: ArrayLike) -> ArrayLike:
     ...
     requireit.ValidationError: value must be > 0.0
     """
-    return require_between(value, a_min=0.0, a_max=None, inclusive_min=False)
+    return require_between(value, a_min=0.0, a_max=None, inclusive_min=False, name=name)
 
 
-def require_nonnegative(value: ArrayLike) -> ArrayLike:
+def require_nonnegative(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is greater than or equal to zero.
 
     Parameters
@@ -189,10 +192,10 @@ def require_nonnegative(value: ArrayLike) -> ArrayLike:
     >>> require_nonnegative(1.0)
     1.0
     """
-    return require_between(value, a_min=0.0, a_max=None, inclusive_min=True)
+    return require_between(value, a_min=0.0, a_max=None, inclusive_min=True, name=name)
 
 
-def require_negative(value: ArrayLike) -> ArrayLike:
+def require_negative(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is strictly less than zero.
 
     Parameters
@@ -219,10 +222,10 @@ def require_negative(value: ArrayLike) -> ArrayLike:
     ...
     requireit.ValidationError: value must be < 0.0
     """
-    return require_between(value, a_min=None, a_max=0.0, inclusive_max=False)
+    return require_between(value, a_min=None, a_max=0.0, inclusive_max=False, name=name)
 
 
-def require_nonpositive(value: ArrayLike) -> ArrayLike:
+def require_nonpositive(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is less than or equal to zero.
 
     Parameters
@@ -251,7 +254,7 @@ def require_nonpositive(value: ArrayLike) -> ArrayLike:
     ...
     requireit.ValidationError: value must be <= 0.0
     """
-    return require_between(value, a_min=None, a_max=0.0, inclusive_max=True)
+    return require_between(value, a_min=None, a_max=0.0, inclusive_max=True, name=name)
 
 
 def require_array(
@@ -261,6 +264,7 @@ def require_array(
     shape: tuple[int, ...] | None = None,
     writable: bool | None = None,
     contiguous: bool | None = None,
+    name: str | None = None,
 ):
     """Validate an array to satisfy requirements.
 
