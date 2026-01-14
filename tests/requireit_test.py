@@ -1,15 +1,17 @@
+from functools import partial
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
 from requireit import ValidationError
+from requireit import require_array
 from requireit import require_between
 from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
 from requireit import require_one_of
 from requireit import require_positive
-from requireit import validate_array
 
 
 @pytest.mark.parametrize(
@@ -125,9 +127,9 @@ def test_require_nonpositive(value, ok):
 
 
 @pytest.mark.parametrize("array", ([1.0, 2.0], [[1, 2]], [[1, 2], [3, 4]], []))
-def test_validate_array_noop(array):
+def test_require_array_noop(array):
     x = np.asarray(array)
-    actual = validate_array(x)
+    actual = require_array(x)
     assert actual is x
     assert_array_equal(actual, array)
 
@@ -135,7 +137,7 @@ def test_validate_array_noop(array):
 @pytest.mark.parametrize("array", ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], []))
 def test_validate_returns_same_object_when_valid(array):
     x = np.asarray(array)
-    actual = validate_array(x, dtype=x.dtype, shape=x.shape)
+    actual = require_array(x, dtype=x.dtype, shape=x.shape)
     assert actual is x
     assert_array_equal(actual, array)
 
@@ -147,7 +149,7 @@ def test_validate_returns_same_object_when_valid(array):
 @pytest.mark.parametrize("array", ([1.0, 2.0, 3.0, 4.0], []))
 def test_validate_dtype_accepts_multiple_specifiers(array, dtype):
     x = np.asarray(array, dtype=np.float32)
-    actual = validate_array(x, dtype=dtype, shape=x.shape)
+    actual = require_array(x, dtype=dtype, shape=x.shape)
     assert actual is x
     assert_array_equal(actual, array)
 
@@ -165,7 +167,7 @@ def test_validate_dtype_accepts_multiple_specifiers(array, dtype):
 )
 def test_validate_dtype_mismatch_raises(array, dtype):
     with pytest.raises(ValidationError, match="^array must have dtype"):
-        validate_array(np.asarray(array), dtype=dtype)
+        require_array(np.asarray(array), dtype=dtype)
 
 
 @pytest.mark.parametrize(
@@ -178,12 +180,12 @@ def test_validate_dtype_mismatch_raises(array, dtype):
 )
 def test_validate_shape_mismatch(array, shape):
     with pytest.raises(ValidationError, match="^array must have shape"):
-        validate_array(np.asarray(array), shape=shape)
+        require_array(np.asarray(array), shape=shape)
 
 
 def test_validate_requires_writable_passes_when_writable():
     x = np.zeros(5)
-    actual = validate_array(x, writable=True)
+    actual = require_array(x, writable=True)
     assert actual is x
 
 
@@ -191,14 +193,14 @@ def test_validate_requires_writable_raises_when_readonly():
     x = np.arange(5)
     x.setflags(write=False)
     with pytest.raises(ValidationError, match="^array must be writable"):
-        validate_array(x, writable=True)
+        require_array(x, writable=True)
 
 
 @pytest.mark.parametrize("array", ([1, 2, 3], [], [[1, 2, 3], [4, 5, 6]]))
 def test_validate_contiguous_requirement_passes_for_c_contiguous(array):
     x = np.asarray(array).copy(order="C")
     assert x.flags.c_contiguous
-    actual = validate_array(x, contiguous=True)
+    actual = require_array(x, contiguous=True)
     assert_array_equal(actual, array)
 
 
@@ -211,4 +213,4 @@ def test_validate_contiguous_requirement_passes_for_c_contiguous(array):
 )
 def test_validate_contiguous_requirement_raises_for_noncontiguous(array):
     with pytest.raises(ValidationError, match="^array must be contiguous"):
-        validate_array(array, contiguous=True)
+        require_array(array, contiguous=True)
