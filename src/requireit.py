@@ -254,7 +254,7 @@ def require_nonpositive(value: ArrayLike) -> ArrayLike:
     return require_between(value, a_min=None, a_max=0.0, inclusive_max=True)
 
 
-def validate_array(
+def require_array(
     array: NDArray,
     *,
     dtype: DTypeLike | None = None,
@@ -290,7 +290,7 @@ def validate_array(
     Examples
     --------
     >>> import numpy as np
-    >>> validate_array(np.array([1, 2, 3, 4]), shape=(2, 2))
+    >>> require_array(np.array([1, 2, 3, 4]), shape=(2, 2))
     Traceback (most recent call last):
     ...
     requireit.ValidationError: array must have shape (2, 2)
