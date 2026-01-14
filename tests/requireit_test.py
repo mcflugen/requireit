@@ -51,7 +51,7 @@ def test_require_one_of_not_ok(value, allowed, allowed_type):
         allowed_type(allowed)
     except TypeError:
         pytest.skip("allowed contains unhashable items")
-    with pytest.raises(ValidationError, match="invalid value"):
+    with pytest.raises(ValidationError, match="^value must be one of"):
         require_one_of(value, allowed=allowed_type(allowed))
 
 
@@ -164,7 +164,7 @@ def test_validate_dtype_accepts_multiple_specifiers(array, dtype):
     ),
 )
 def test_validate_dtype_mismatch_raises(array, dtype):
-    with pytest.raises(ValidationError, match="incorrect type"):
+    with pytest.raises(ValidationError, match="^array must have dtype"):
         validate_array(np.asarray(array), dtype=dtype)
 
 
@@ -177,7 +177,7 @@ def test_validate_dtype_mismatch_raises(array, dtype):
     ],
 )
 def test_validate_shape_mismatch(array, shape):
-    with pytest.raises(ValidationError, match="incorrect shape"):
+    with pytest.raises(ValidationError, match="^array must have shape"):
         validate_array(np.asarray(array), shape=shape)
 
 
@@ -190,7 +190,7 @@ def test_validate_requires_writable_passes_when_writable():
 def test_validate_requires_writable_raises_when_readonly():
     x = np.arange(5)
     x.setflags(write=False)
-    with pytest.raises(ValidationError, match="array is not writable"):
+    with pytest.raises(ValidationError, match="^array must be writable"):
         validate_array(x, writable=True)
 
 
@@ -210,5 +210,5 @@ def test_validate_contiguous_requirement_passes_for_c_contiguous(array):
     ),
 )
 def test_validate_contiguous_requirement_raises_for_noncontiguous(array):
-    with pytest.raises(ValidationError, match="array is not contiguous"):
+    with pytest.raises(ValidationError, match="^array must be contiguous"):
         validate_array(array, contiguous=True)
