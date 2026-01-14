@@ -9,3 +9,4 @@
 - Added `noxfile.py` file and linters [#5](https://github.com/mcflugen/requireit/issues/5)
 - Added unit tests for `requireit` [#6](https://github.com/mcflugen/requireit/issues/6)
 - Added GitHub Actions for CI [#7](https://github.com/mcflugen/requireit/issues/7)
+- Standardized validation error messages [#8](https://github.com/mcflugen/requireit/issues/8)
