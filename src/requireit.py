@@ -30,6 +30,8 @@ def require_one_of(
         A scalar value to validate.
     allowed : iterable of any
         Allowed values.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -94,6 +96,8 @@ def require_between(
     inclusive_max : bool, optional
         If ``True`` (default), the upper bound is inclusive (``<=``).
         If ``False``, the upper bound is strict (``<``).
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -140,6 +144,8 @@ def require_positive(value: ArrayLike, name: str | None = None) -> ArrayLike:
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -170,6 +176,8 @@ def require_nonnegative(value: ArrayLike, name: str | None = None) -> ArrayLike:
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -202,6 +210,8 @@ def require_negative(value: ArrayLike, name: str | None = None) -> ArrayLike:
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -232,6 +242,8 @@ def require_nonpositive(value: ArrayLike, name: str | None = None) -> ArrayLike:
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -280,6 +292,8 @@ def require_array(
         Require the array to be writable.
     contiguous : bool, optional
         Require the array to be c-contiguous.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
