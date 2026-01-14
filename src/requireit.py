@@ -54,7 +54,7 @@ def require_one_of(
     ...
     requireit.ValidationError: value must be one of 'bar', 'foo'
     """
-    name = "value"
+    name = name or "value"
 
     try:
         collection_of_allowed: Collection = set(allowed)
@@ -114,7 +114,7 @@ def require_between(
     ...
     requireit.ValidationError: value must be > 0.0
     """
-    name = "value"
+    name = name or "value"
 
     arr = np.asarray(value)
 
@@ -299,7 +299,7 @@ def require_array(
     ...
     requireit.ValidationError: array must have shape (2, 2)
     """
-    name = "array"
+    name = name or "array"
 
     if shape is not None and array.shape != shape:
         raise ValidationError(f"{name} must have shape {shape}")
