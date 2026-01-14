@@ -328,3 +328,50 @@ def require_array(
         raise ValidationError(f"{name} must be contiguous")
 
     return array
+
+
+def require_path_string(path: Any, *, name: str | None = None) -> str:
+    """Validate that a value is a string intended to be used as a path.
+
+    This function verifies only that the provided value is a non-empty string
+    that doesn't contain null characters. It does *not* check whether the
+    path exists, is readable, is writable, or is valid on any particular
+    operating system.
+
+    Parameters
+    ----------
+    path : any
+        Value to validate.
+    name : str, optional
+        Variable name used in error messages.
+
+    Returns
+    -------
+    str
+        The original value, guaranteed to be a string that could possibly
+        be used as a file path.
+
+    Raises
+    ------
+    ValidationError
+        If ``path`` cannot be used as a file path.
+
+    Examples
+    --------
+    >>> require_path_string("data/input.txt")
+    'data/input.txt'
+    >>> require_path_string("")
+    Traceback (most recent call last):
+    ...
+    requireit.ValidationError: path must not be empty
+    """
+    name = name or "path"
+
+    if not isinstance(path, str):
+        raise ValidationError(f"{name} must be a string")
+    if path == "":
+        raise ValidationError(f"{name} must not be empty")
+    if "\x00" in path:
+        raise ValidationError(f"{name} must not contain null characters")
+
+    return path
