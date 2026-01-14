@@ -3,7 +3,7 @@
 **Tiny, numpy-aware runtime validators for explicit precondition checks.**
 
 `requireit` provides a small collection of lightweight helper functions such as
-`require_positive`, `require_between`, and `validate_array` for validating values
+`require_positive`, `require_between`, and `require_array` for validating values
 and arrays at runtime.
 
 It is intentionally minimal and dependency-light (*numpy* only).
@@ -111,7 +111,7 @@ All accept scalars or array-like inputs.
 ### Array validation
 
 ```python
-validate_array(
+require_array(
     array,
     *,
     dtype=None,
@@ -124,8 +124,8 @@ validate_array(
 Validate NumPy array properties without copying or modifying the array.
 
 ```python
-validate_array(x, dtype=np.float64, shape=(100,))
-validate_array(x, writable=True, contiguous=True)
+require_array(x, dtype=np.float64, shape=(100,))
+require_array(x, writable=True, contiguous=True)
 ```
 
 Checks are applied only if the corresponding keyword is provided.
