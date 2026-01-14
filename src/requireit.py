@@ -52,6 +52,8 @@ def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
     ...
     requireit.ValidationError: invalid value: 'Foo' is not one of 'bar', 'foo'
     """
+    name = "value"
+
     try:
         collection_of_allowed: Collection = set(allowed)
         in_collection = value in collection_of_allowed
@@ -61,7 +63,7 @@ def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
 
     if not in_collection:
         allowed_str = ", ".join(sorted(repr(x) for x in collection_of_allowed))
-        raise ValidationError(f"invalid value: {value!r} is not one of {allowed_str}")
+        raise ValidationError(f"{name} must be one of {allowed_str}")
     return value
 
 
@@ -109,19 +111,21 @@ def require_between(
     ...
     requireit.ValidationError: value must be > 0.0
     """
+    name = "value"
+
     arr = np.asarray(value)
 
     if a_min is not None:
         cmp: Callable = np.less if inclusive_min else np.less_equal
         op = ">=" if inclusive_min else ">"
         if np.any(cmp(arr, a_min)):
-            raise ValidationError(f"value must be {op} {a_min}")
+            raise ValidationError(f"{name} must be {op} {a_min}")
 
     if a_max is not None:
         cmp = np.greater if inclusive_max else np.greater_equal
         op = "<=" if inclusive_max else "<"
         if np.any(cmp(arr, a_max)):
-            raise ValidationError(f"value must be {op} {a_max}")
+            raise ValidationError(f"{name} must be {op} {a_max}")
 
     return value
 
@@ -291,16 +295,18 @@ def validate_array(
     ...
     requireit.ValidationError: incorrect shape: expected (2, 2), got (4,)
     """
+    name = "array"
+
     if shape is not None and array.shape != shape:
-        raise ValidationError(f"incorrect shape: expected {shape}, got {array.shape}")
+        raise ValidationError(f"{name} must have shape {shape}")
 
     if dtype is not None and array.dtype != np.dtype(dtype):
-        raise ValidationError(f"incorrect type: expected {dtype}, got {array.dtype}")
+        raise ValidationError(f"{name} must have dtype {dtype}")
 
     if writable and not array.flags.writeable:
-        raise ValidationError("array is not writable")
+        raise ValidationError(f"{name} must be writable")
 
     if contiguous and not array.flags.c_contiguous:
-        raise ValidationError("array is not contiguous")
+        raise ValidationError(f"{name} must be contiguous")
 
     return array
