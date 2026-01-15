@@ -13,3 +13,5 @@
 - Renamed ``validate_array`` to ``require_array`` [#9](https://github.com/mcflugen/requireit/issues/9)
 - Added optional ``name`` keyword to require functions to make error messages
   easier to read [#10](https://github.com/mcflugen/requireit/issues/10)
+- Added new validator, ``require_path_string``, that checks if a value could be used
+  as a file path [#11](https://github.com/mcflugen/requireit/issues/11)

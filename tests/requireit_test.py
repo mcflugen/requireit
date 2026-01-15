@@ -12,6 +12,7 @@ from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
 from requireit import require_one_of
+from requireit import require_path_string
 from requireit import require_positive
 
 
@@ -25,6 +26,9 @@ from requireit import require_positive
         pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
         pytest.param(partial(require_one_of, "foo", allowed=("bar",)), id="one_of-foo"),
         pytest.param(partial(require_positive, 0), id="positive-0"),
+        pytest.param(partial(require_path_string, ""), id="path-empty"),
+        pytest.param(partial(require_path_string, 0), id="path-0"),
+        pytest.param(partial(require_path_string, "foo\x00bar"), id="path-null"),
     ),
 )
 def test_require_with_name(require):
@@ -241,3 +245,24 @@ def test_require_contiguous_requirement_raises_for_noncontiguous(array, name):
     prefix = re.escape(name or "array")
     with pytest.raises(ValidationError, match=f"^{prefix} must be contiguous"):
         require_array(array, contiguous=True, name=name)
+
+
+@pytest.mark.parametrize(
+    "path", ("a", "a/b", "https://foo/bar", "--foo", "*", "..", ".")
+)
+def test_require_path_string(path):
+    actual = require_path_string(path)
+    assert actual is path
+
+
+@pytest.mark.parametrize(
+    "path, match",
+    (
+        ("", "path must not be empty"),
+        ("foo\x00bar", "path must not contain null characters"),
+        (b"foo", "path must be a string"),
+    ),
+)
+def test_require_path_string_bad_input(path, match):
+    with pytest.raises(ValidationError, match=match):
+        require_path_string(path)
