@@ -1,3 +1,6 @@
+import re
+from functools import partial
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -10,6 +13,23 @@ from requireit import require_nonnegative
 from requireit import require_nonpositive
 from requireit import require_one_of
 from requireit import require_positive
+
+
+@pytest.mark.parametrize(
+    "require",
+    (
+        pytest.param(partial(require_between, -1, 0, 1), id="between-below"),
+        pytest.param(partial(require_between, 2, 0, 1), id="between-above"),
+        pytest.param(partial(require_negative, 0), id="negative-0"),
+        pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
+        pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
+        pytest.param(partial(require_one_of, "foo", allowed=("bar",)), id="one_of-foo"),
+        pytest.param(partial(require_positive, 0), id="positive-0"),
+    ),
+)
+def test_require_with_name(require):
+    with pytest.raises(ValidationError, match="^foobar"):
+        require(name="foobar")
 
 
 @pytest.mark.parametrize(
@@ -163,9 +183,11 @@ def test_require_dtype_accepts_multiple_specifiers(array, dtype):
         ([1, 2, 3], bool),
     ),
 )
-def test_require_dtype_mismatch_raises(array, dtype):
-    with pytest.raises(ValidationError, match="^array must have dtype"):
-        require_array(np.asarray(array), dtype=dtype)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_dtype_mismatch_raises(array, dtype, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must have dtype"):
+        require_array(np.asarray(array), dtype=dtype, name=name)
 
 
 @pytest.mark.parametrize(
@@ -176,9 +198,11 @@ def test_require_dtype_mismatch_raises(array, dtype):
         ([[0, 0], [0, 0], [0, 0]], (6,)),
     ],
 )
-def test_require_shape_mismatch(array, shape):
-    with pytest.raises(ValidationError, match="^array must have shape"):
-        require_array(np.asarray(array), shape=shape)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_shape_mismatch(array, shape, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must have shape"):
+        require_array(np.asarray(array), shape=shape, name=name)
 
 
 def test_require_requires_writable_passes_when_writable():
@@ -187,11 +211,14 @@ def test_require_requires_writable_passes_when_writable():
     assert actual is x
 
 
-def test_require_requires_writable_raises_when_readonly():
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_requires_writable_raises_when_readonly(name):
     x = np.arange(5)
     x.setflags(write=False)
-    with pytest.raises(ValidationError, match="^array must be writable"):
-        require_array(x, writable=True)
+
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must be writable"):
+        require_array(x, writable=True, name=name)
 
 
 @pytest.mark.parametrize("array", ([1, 2, 3], [], [[1, 2, 3], [4, 5, 6]]))
@@ -209,6 +236,8 @@ def test_require_contiguous_requirement_passes_for_c_contiguous(array):
         np.arange(12).reshape((3, 4))[:, ::2],
     ),
 )
-def test_require_contiguous_requirement_raises_for_noncontiguous(array):
-    with pytest.raises(ValidationError, match="^array must be contiguous"):
-        require_array(array, contiguous=True)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_contiguous_requirement_raises_for_noncontiguous(array, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must be contiguous"):
+        require_array(array, contiguous=True, name=name)

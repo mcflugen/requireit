@@ -19,7 +19,9 @@ class ValidationError(RequireItError):
     """Error to indicate that a validation has failed."""
 
 
-def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
+def require_one_of(
+    value: Any, *, allowed: Iterable[Any], name: str | None = None
+) -> Any:
     """Validate that ``value`` is one of ``allowed``.
 
     Parameters
@@ -28,6 +30,8 @@ def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
         A scalar value to validate.
     allowed : iterable of any
         Allowed values.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -52,7 +56,7 @@ def require_one_of(value: Any, *, allowed: Iterable[Any]) -> Any:
     ...
     requireit.ValidationError: value must be one of 'bar', 'foo'
     """
-    name = "value"
+    name = name or "value"
 
     try:
         collection_of_allowed: Collection = set(allowed)
@@ -74,6 +78,7 @@ def require_between(
     *,
     inclusive_min: bool = True,
     inclusive_max: bool = True,
+    name: str | None = None,
 ) -> ArrayLike:
     """Validate that a value lies within a specified interval.
 
@@ -91,6 +96,8 @@ def require_between(
     inclusive_max : bool, optional
         If ``True`` (default), the upper bound is inclusive (``<=``).
         If ``False``, the upper bound is strict (``<``).
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -111,7 +118,7 @@ def require_between(
     ...
     requireit.ValidationError: value must be > 0.0
     """
-    name = "value"
+    name = name or "value"
 
     arr = np.asarray(value)
 
@@ -130,13 +137,15 @@ def require_between(
     return value
 
 
-def require_positive(value: ArrayLike) -> ArrayLike:
+def require_positive(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is strictly greater than zero.
 
     Parameters
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -157,16 +166,18 @@ def require_positive(value: ArrayLike) -> ArrayLike:
     ...
     requireit.ValidationError: value must be > 0.0
     """
-    return require_between(value, a_min=0.0, a_max=None, inclusive_min=False)
+    return require_between(value, a_min=0.0, a_max=None, inclusive_min=False, name=name)
 
 
-def require_nonnegative(value: ArrayLike) -> ArrayLike:
+def require_nonnegative(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is greater than or equal to zero.
 
     Parameters
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -189,16 +200,18 @@ def require_nonnegative(value: ArrayLike) -> ArrayLike:
     >>> require_nonnegative(1.0)
     1.0
     """
-    return require_between(value, a_min=0.0, a_max=None, inclusive_min=True)
+    return require_between(value, a_min=0.0, a_max=None, inclusive_min=True, name=name)
 
 
-def require_negative(value: ArrayLike) -> ArrayLike:
+def require_negative(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is strictly less than zero.
 
     Parameters
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -219,16 +232,18 @@ def require_negative(value: ArrayLike) -> ArrayLike:
     ...
     requireit.ValidationError: value must be < 0.0
     """
-    return require_between(value, a_min=None, a_max=0.0, inclusive_max=False)
+    return require_between(value, a_min=None, a_max=0.0, inclusive_max=False, name=name)
 
 
-def require_nonpositive(value: ArrayLike) -> ArrayLike:
+def require_nonpositive(value: ArrayLike, name: str | None = None) -> ArrayLike:
     """Validate that a value is less than or equal to zero.
 
     Parameters
     ----------
     value : scalar or array-like
         The input value(s) to be validated.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -251,7 +266,7 @@ def require_nonpositive(value: ArrayLike) -> ArrayLike:
     ...
     requireit.ValidationError: value must be <= 0.0
     """
-    return require_between(value, a_min=None, a_max=0.0, inclusive_max=True)
+    return require_between(value, a_min=None, a_max=0.0, inclusive_max=True, name=name)
 
 
 def require_array(
@@ -261,6 +276,7 @@ def require_array(
     shape: tuple[int, ...] | None = None,
     writable: bool | None = None,
     contiguous: bool | None = None,
+    name: str | None = None,
 ):
     """Validate an array to satisfy requirements.
 
@@ -276,6 +292,8 @@ def require_array(
         Require the array to be writable.
     contiguous : bool, optional
         Require the array to be c-contiguous.
+    name : str, optional
+        Variable name used in error messages.
 
     Returns
     -------
@@ -295,7 +313,7 @@ def require_array(
     ...
     requireit.ValidationError: array must have shape (2, 2)
     """
-    name = "array"
+    name = name or "array"
 
     if shape is not None and array.shape != shape:
         raise ValidationError(f"{name} must have shape {shape}")

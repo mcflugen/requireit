@@ -11,3 +11,5 @@
 - Added GitHub Actions for CI [#7](https://github.com/mcflugen/requireit/issues/7)
 - Standardized validation error messages [#8](https://github.com/mcflugen/requireit/issues/8)
 - Renamed ``validate_array`` to ``require_array`` [#9](https://github.com/mcflugen/requireit/issues/9)
+- Added optional ``name`` keyword to require functions to make error messages
+  easier to read [#10](https://github.com/mcflugen/requireit/issues/10)
