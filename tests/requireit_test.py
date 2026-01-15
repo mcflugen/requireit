@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 from requireit import ValidationError
 from requireit import require_array
 from requireit import require_between
+from requireit import require_less_than
 from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
@@ -29,6 +30,7 @@ from requireit import require_positive
         pytest.param(partial(require_path_string, ""), id="path-empty"),
         pytest.param(partial(require_path_string, 0), id="path-0"),
         pytest.param(partial(require_path_string, "foo\x00bar"), id="path-null"),
+        pytest.param(partial(require_less_than, 0, -1), id="less_than"),
     ),
 )
 def test_require_with_name(require):
@@ -266,3 +268,28 @@ def test_require_path_string(path):
 def test_require_path_string_bad_input(path, match):
     with pytest.raises(ValidationError, match=match):
         require_path_string(path)
+
+
+@pytest.mark.parametrize(
+    "value", (0.0, np.asarray(0.0), np.asarray([0.0, -1.0]), np.asarray([[0.0]]))
+)
+def test_require_less_than_exclusive(value):
+    actual = require_less_than(value, upper=1.0)
+    assert actual is value
+
+
+@pytest.mark.parametrize(
+    "value", (0.0, np.asarray(0.0), np.asarray([0.0, -1.0]), np.asarray([[0.0]]))
+)
+def test_require_less_than_inclusive(value):
+    actual = require_less_than(value, upper=value, inclusive=True)
+    assert actual is value
+
+    with pytest.raises(ValidationError, match="^value must be < "):
+        require_less_than(value, upper=np.asarray(value).max(), inclusive=False)
+
+
+@pytest.mark.parametrize("inclusive, op", ((True, "<="), (False, "<")))
+def test_require_less_than_error_message(inclusive, op):
+    with pytest.raises(ValidationError, match=f"^value must be {op} "):
+        require_less_than(2.0, upper=1.0, inclusive=inclusive)
