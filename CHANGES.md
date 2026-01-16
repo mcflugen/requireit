@@ -15,3 +15,5 @@
   easier to read [#10](https://github.com/mcflugen/requireit/issues/10)
 - Added new validator, ``require_path_string``, that checks if a value could be used
   as a file path [#11](https://github.com/mcflugen/requireit/issues/11)
+- Added new validator, ``require_less_than``, that checks if one value is less than
+  another [#12](https://github.com/mcflugen/requireit/issues/12)

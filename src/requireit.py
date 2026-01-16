@@ -375,3 +375,66 @@ def require_path_string(path: Any, *, name: str | None = None) -> str:
         raise ValidationError(f"{name} must not contain null characters")
 
     return path
+
+
+def require_less_than(
+    value: Any,
+    upper: Any,
+    *,
+    inclusive: bool = False,
+    name: str | None = None,
+) -> Any:
+    """Require that a value is less than (or equal to) an upper bound.
+
+    For arrays, this requirement fails if **any** element violates the
+    constraint.
+
+    Parameters
+    ----------
+    value : any
+        Value to validate.
+    upper : any
+        Upper bound to compare against.
+    inclusive : bool, optional
+        If ``True``, require ``value <= upper``. Otherwise, require ``value < upper``.
+    name : str, optional
+        Variable name used in error messages.
+
+    Returns
+    -------
+    any
+        The original value.
+
+    Raises
+    ------
+    ValidationError
+        If the requirement is not satisfied.
+
+    Examples
+    --------
+    >>> require_less_than(1.0, 2.0)
+    1.0
+    >>> require_less_than(2.0, 2.0)
+    Traceback (most recent call last):
+    ...
+    requireit.ValidationError: value must be < 2.0
+    >>> require_less_than(2.0, 2.0, inclusive=True)
+    2.0
+    """
+    name = name or "value"
+
+    value_array = np.asarray(value)
+    upper = np.asarray(upper)
+
+    if inclusive:
+        violated = np.greater(value_array, upper)
+        op = "<="
+    else:
+        violated = np.greater_equal(value_array, upper)
+        op = "<"
+
+    if np.any(violated):
+        upper_str = upper.item() if upper.size == 1 else "upper"
+        raise ValidationError(f"{name} must be {op} {upper_str}")
+
+    return value
