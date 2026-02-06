@@ -71,6 +71,54 @@ def require_one_of(
     return value
 
 
+def require_not_one_of(
+    value: Any, *, forbidden: Iterable[Any], name: str | None = None
+) -> Any:
+    """Validate that ``value`` is not one of ``forbidden``.
+
+    Parameters
+    ----------
+    value : any
+        A scalar value to validate.
+    forbidden : iterable of any
+        Forbidden values.
+    name : str, optional
+        Variable name used in error messages.
+
+    Returns
+    -------
+    any
+        The original value.
+
+    Raises
+    ------
+    ValidationError
+        If the value is in ``forbidden``.
+
+    Examples
+    --------
+    >>> require_not_one_of("foo", forbidden={"baz"})
+    'foo'
+    >>> require_not_one_of(None, forbidden=("baz", None))
+    Traceback (most recent call last):
+    ...
+    requireit.ValidationError: value must not be one of
+    """
+    name = name or "value"
+
+    try:
+        collection_of_forbidden: Collection = set(forbidden)
+        in_collection = value in collection_of_forbidden
+    except TypeError:
+        collection_of_forbidden = list(forbidden)
+        in_collection = value in collection_of_forbidden
+
+    if in_collection:
+        forbidden_str = ", ".join(sorted(repr(x) for x in collection_of_forbidden))
+        raise ValidationError(f"{name} must not be one of {forbidden_str}")
+    return value
+
+
 def require_between(
     value: ArrayLike,
     a_min: float | None = None,
