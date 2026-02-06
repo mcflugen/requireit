@@ -6,6 +6,9 @@
   in a forbidden set of values [#15](https://github.com/mcflugen/requireit/issues/15)
 - Added new validators that check if an object's length is exactly, at most, or at least
   a given value [#16](https://github.com/mcflugen/requireit/issues/16)
+- Added a new fuction, ``argparse_type```, that allows a *requireit* validator to be
+  used as an *argparse* ``type=`` callable
+  [#17](https://github.com/mcflugen/requireit/issues/17)
 
 ## 0.2.0 (2026-01-16)
 
