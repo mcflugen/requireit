@@ -9,6 +9,8 @@
 - Added a new fuction, ``argparse_type```, that allows a *requireit* validator to be
   used as an *argparse* ``type=`` callable
   [#17](https://github.com/mcflugen/requireit/issues/17)
+- Added additional unit test to check that all validators return the input value
+  (not a copy) on success [#18](https://github.com/mcflugen/requireit/issues/18)
 
 ## 0.2.0 (2026-01-16)
 
