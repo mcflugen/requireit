@@ -4,6 +4,8 @@
 
 - Added new validator, ``require_not_one_of``, that checks that value is not contained
   in a forbidden set of values [#15](https://github.com/mcflugen/requireit/issues/15)
+- Added new validators that check if an object's length is exactly, at most, or at least
+  a given value [#16](https://github.com/mcflugen/requireit/issues/16)
 
 ## 0.2.0 (2026-01-16)
 
