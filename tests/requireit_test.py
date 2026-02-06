@@ -33,7 +33,7 @@ from requireit import require_positive
         pytest.param(
             partial(require_length_is_at_most, [1, 2, 3], 2), id="length_is_at_most-2"
         ),
-        pytest.param(partial(require_negative, 0), id="negative-0"),
+        pytest.param(partial(require_negative, (0,)), id="negative-0"),
         pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
         pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
         pytest.param(
@@ -50,6 +50,41 @@ from requireit import require_positive
 def test_require_with_name(require):
     with pytest.raises(ValidationError, match="^foobar"):
         require(name="foobar")
+
+
+@pytest.mark.parametrize(
+    "require,value",
+    (
+        pytest.param(require_array, np.asarray(0.0), id="require_array"),
+        pytest.param(
+            partial(require_between, a_min=-1, a_max=1), (0.0,), id="require_between"
+        ),
+        pytest.param(partial(require_length_is, length=2), (1, 2), id="length_is"),
+        pytest.param(
+            partial(require_length_is_at_least, length=1),
+            (1, 2),
+            id="length_is_at_least",
+        ),
+        pytest.param(
+            partial(require_length_is_at_most, length=4), (1, 2), id="length_is_at_most"
+        ),
+        pytest.param(require_negative, -1.0, id="require_negative"),
+        pytest.param(require_nonnegative, 0.0, id="require_nonnegative"),
+        pytest.param(require_nonpositive, 0.0, id="require_nonpositive"),
+        pytest.param(partial(require_not_one_of, forbidden=()), "foo", id="not_one_of"),
+        pytest.param(
+            partial(require_one_of, allowed={"foo"}), "foo", id="require_one_of"
+        ),
+        pytest.param(require_positive, 1.0, id="require_positive"),
+        pytest.param(require_path_string, "/foo", id="require_path_string"),
+        pytest.param(
+            partial(require_less_than, upper=1.0), 0.0, id="require_less_than"
+        ),
+    ),
+)
+def test_require_returns_input(require, value):
+    actual = require(value)
+    assert actual is value
 
 
 @pytest.mark.parametrize(
@@ -206,12 +241,12 @@ def test_require_nonpositive(value, ok):
             require_nonpositive(value)
 
 
-@pytest.mark.parametrize("array", ([1.0, 2.0], [[1, 2]], [[1, 2], [3, 4]], []))
-def test_require_array_noop(array):
-    x = np.asarray(array)
-    actual = require_array(x)
-    assert actual is x
-    assert_array_equal(actual, array)
+@pytest.mark.parametrize("values", ([1.0, 2.0], [[1, 2]], [[1, 2], [3, 4]], []))
+def test_require_array_noop(values):
+    array = np.array(values)
+    actual = require_array(array)
+    assert actual is array
+    assert_array_equal(actual, values)
 
 
 @pytest.mark.parametrize("array", ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], []))
