@@ -2,6 +2,9 @@
 
 ## 0.3.0 (not yet released)
 
+- Added new validator, ``require_not_one_of``, that checks that value is not contained
+  in a forbidden set of values [#15](https://github.com/mcflugen/requireit/issues/15)
+
 ## 0.2.0 (2026-01-16)
 
 - Standardized validation error messages [#8](https://github.com/mcflugen/requireit/issues/8)
