@@ -12,6 +12,7 @@ from requireit import require_less_than
 from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
+from requireit import require_not_one_of
 from requireit import require_one_of
 from requireit import require_path_string
 from requireit import require_positive
@@ -25,6 +26,9 @@ from requireit import require_positive
         pytest.param(partial(require_negative, 0), id="negative-0"),
         pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
         pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
+        pytest.param(
+            partial(require_not_one_of, "foo", forbidden=("foo",)), id="not_one_of-foo"
+        ),
         pytest.param(partial(require_one_of, "foo", allowed=("bar",)), id="one_of-foo"),
         pytest.param(partial(require_positive, 0), id="positive-0"),
         pytest.param(partial(require_path_string, ""), id="path-empty"),
@@ -60,6 +64,27 @@ def test_require_one_of_ok(value, allowed, allowed_type):
 
 
 @pytest.mark.parametrize(
+    "value, forbidden",
+    (
+        (0, (1, 2)),
+        (1, ("1", 0)),
+        ("foo", ("foobar", "bar", "baz")),
+        ("", (0, True)),
+        ("b", "foo"),
+        (0, ([0], [1], 1)),
+        ([1], ([0], [2])),
+    ),
+)
+@pytest.mark.parametrize("forbidden_type", (list, tuple, set))
+def test_require_not_one_of_ok(value, forbidden, forbidden_type):
+    try:
+        forbidden_type(forbidden)
+    except TypeError:
+        pytest.skip("forbidden contains unhashable items")
+    assert require_not_one_of(value, forbidden=forbidden_type(forbidden)) == value
+
+
+@pytest.mark.parametrize(
     "value, allowed",
     (
         (-1, (0, 1)),
@@ -79,6 +104,27 @@ def test_require_one_of_not_ok(value, allowed, allowed_type):
         pytest.skip("allowed contains unhashable items")
     with pytest.raises(ValidationError, match="^value must be one of"):
         require_one_of(value, allowed=allowed_type(allowed))
+
+
+@pytest.mark.parametrize(
+    "value, forbidden",
+    (
+        (-1, (0, 1, -1)),
+        (0, (1, 0)),
+        ("foo", ("foo", "bar", "baz")),
+        ("b", "foobar"),
+        (0, ([0], 0)),
+        ([0], (0, 1, [0])),
+    ),
+)
+@pytest.mark.parametrize("forbidden_type", (list, tuple, set))
+def test_require_not_one_of_not_ok(value, forbidden, forbidden_type):
+    try:
+        forbidden_type(forbidden)
+    except TypeError:
+        pytest.skip("forbidden contains unhashable items")
+    with pytest.raises(ValidationError, match="^value must not be one of"):
+        require_not_one_of(value, forbidden=forbidden_type(forbidden))
 
 
 @pytest.mark.parametrize("value", (1.0, (-1, 1), np.asarray([-1, 1])))
