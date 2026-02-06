@@ -8,6 +8,9 @@ from numpy.testing import assert_array_equal
 from requireit import ValidationError
 from requireit import require_array
 from requireit import require_between
+from requireit import require_length_is
+from requireit import require_length_is_at_least
+from requireit import require_length_is_at_most
 from requireit import require_less_than
 from requireit import require_negative
 from requireit import require_nonnegative
@@ -23,6 +26,13 @@ from requireit import require_positive
     (
         pytest.param(partial(require_between, -1, 0, 1), id="between-below"),
         pytest.param(partial(require_between, 2, 0, 1), id="between-above"),
+        pytest.param(partial(require_length_is, [1, 2, 3], 2), id="length_is-2"),
+        pytest.param(
+            partial(require_length_is_at_least, [1, 2, 3], 4), id="length_is_at_least-4"
+        ),
+        pytest.param(
+            partial(require_length_is_at_most, [1, 2, 3], 2), id="length_is_at_most-2"
+        ),
         pytest.param(partial(require_negative, 0), id="negative-0"),
         pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
         pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
@@ -339,3 +349,33 @@ def test_require_less_than_inclusive(value):
 def test_require_less_than_error_message(inclusive, op):
     with pytest.raises(ValidationError, match=f"^value must be {op} "):
         require_less_than(2.0, upper=1.0, inclusive=inclusive)
+
+
+@pytest.mark.parametrize(
+    "value", ({1, 2, 3}, [4, 5, 6], "foo", {"0": 0, "1": 1, "2": 2})
+)
+def test_require_length_is_ok(value):
+    actual = require_length_is(value, 3)
+    assert actual is value
+    actual = require_length_is_at_least(value, 2)
+    assert actual is value
+    actual = require_length_is_at_most(value, 4)
+    assert actual is value
+
+
+@pytest.mark.parametrize(
+    "value", ({1, 2, 3}, [4, 5, 6], "foo", {"0": 0, "1": 1, "2": 2})
+)
+def test_require_length_is_not_ok(value):
+    with pytest.raises(ValidationError, match="value must have length"):
+        require_length_is(value, 2)
+    with pytest.raises(ValidationError, match="value must have length >="):
+        require_length_is_at_least(value, 4)
+    with pytest.raises(ValidationError, match="value must have length <="):
+        require_length_is_at_most(value, 2)
+
+
+@pytest.mark.parametrize("value", (0, True, 3.14, 1 + 2j, None))
+def test_require_length_without_len(value):
+    with pytest.raises(ValidationError, match="value must have a length"):
+        require_length_is(value, 2)
