@@ -19,6 +19,38 @@ class ValidationError(RequireItError):
     """Error to indicate that a validation has failed."""
 
 
+def argparse_type(validator: Callable) -> Callable:
+    """Adapt a requireit validator for use as an argparse `type=` callable.
+
+    Example
+    -------
+    >>> import argparse
+    >>> parser = argparse.ArgumentParser()
+    >>> _ = parser.add_argument(
+    ...     "--n", type=argparse_type(lambda x: require_positive(int(x)))
+    ... )
+    >>> parser.parse_args(["--n", "1"]).n
+    '1'
+
+    >>> try:
+    ...     parser.parse_args(["--n", "0"])
+    ... except SystemExit as e:
+    ...     e.code
+    ...
+    2
+    """
+    import argparse
+
+    def _type(value: Any) -> Any:
+        try:
+            validator(value)
+        except ValidationError as error:
+            raise argparse.ArgumentTypeError(str(error)) from None
+        return value
+
+    return _type
+
+
 def require_one_of(
     value: Any, *, allowed: Iterable[Any], name: str | None = None
 ) -> Any:
