@@ -315,6 +315,13 @@ def require_greater_than(value: Any, lower: Any, *, name: str | None = None) -> 
     return require_between(value, a_min=lower, inclusive_min=False, name=name)
 
 
+def require_greater_than_or_equal(
+    value: Any, lower: Any, *, name: str | None = None
+) -> Any:
+    """Require `value >= lower`"""
+    return require_between(value, a_min=lower, inclusive_min=True, name=name)
+
+
 def require_less_than(
     value: Any,
     upper: Any,
