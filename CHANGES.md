@@ -11,6 +11,9 @@
   [#17](https://github.com/mcflugen/requireit/issues/17)
 - Added additional unit test to check that all validators return the input value
   (not a copy) on success [#18](https://github.com/mcflugen/requireit/issues/18)
+- Added new validator, ``require_length_between``, that checks that an object's length
+  is between a minimum and maximum length.
+  [#19](https://github.com/mcflugen/requireit/issues/19)
 
 ## 0.2.0 (2026-01-16)
 
