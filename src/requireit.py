@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from collections.abc import Collection
 from collections.abc import Iterable
+from collections.abc import Sized
 from typing import Any
 
 import numpy as np
@@ -526,6 +527,61 @@ def _length_of(value, *, name: str | None):
         return len(value)
     except TypeError as err:
         raise ValidationError(f"{name} must have a length") from err
+
+
+def require_length_between(
+    value: Sized,
+    minimum: int | None = None,
+    maximum: int | None = None,
+    *,
+    inclusive_min: bool = True,
+    inclusive_max: bool = True,
+    name: str | None = None,
+):
+    """Require `len(value)` falls within a specified range.
+
+    Parameters
+    ----------
+    value : Sized
+        Object with a defined length.
+    minimum : int, optional
+        Minimum allowed length.
+    maximum : int, optional
+        Maximum allowed length.
+    inclusive_min : bool, optional
+        If True, require `len(value) >= minimum`. Otherwise `> minimum`.
+    inclusive_max : bool, optional
+        If True, require `len(value) <= maximum`. Otherwise `< maximum`.
+    name : str, optional
+        Name used in error messages.
+
+    Returns
+    -------
+    value
+        The validated object.
+
+    Raises
+    ------
+    ValidationError
+        If the object does not have the required length or has no length.
+    """
+    name = name or "value"
+
+    length = _length_of(value, name=name)
+
+    if minimum is not None:
+        is_ok = length >= minimum if inclusive_min else length > minimum
+        op = ">=" if inclusive_min else ">"
+        if not is_ok:
+            raise ValidationError(f"{name} must have length {op} {minimum}")
+
+    if maximum is not None:
+        is_ok = length <= maximum if inclusive_max else length < maximum
+        op = "<=" if inclusive_max else "<"
+        if not is_ok:
+            raise ValidationError(f"{name} must have length {op} {maximum}")
+
+    return value
 
 
 def require_length_is(value: Any, length: int, *, name: str | None = None):
