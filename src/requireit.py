@@ -1,3 +1,4 @@
+import importlib
 from collections.abc import Callable
 from collections.abc import Collection
 from collections.abc import Iterable
@@ -561,3 +562,10 @@ def require_length_at_most(value: Any, length: int, *, name: str | None = None):
     return require_length_between(
         value, minimum=None, maximum=length, inclusive_max=True, name=name
     )
+
+
+def import_package(name: str):
+    try:
+        return importlib.import_module(name)
+    except ModuleNotFoundError:
+        raise ValidationError(f"{name} must be installed") from None
