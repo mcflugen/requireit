@@ -19,6 +19,9 @@
   ``require_length_is_at_least`` is now ``require_length_at_least``,
   ``require_length_is_at_most`` is now ``require_length_at_most``.
   [#20](https://github.com/mcflugen/requireit/issues/20)
+- Added new validator, ``require_contains``, that checks if a collection contains
+  a set of required values. [#21](https://github.com/mcflugen/requireit/issues/21)
+
 
 ## 0.2.0 (2026-01-16)
 
