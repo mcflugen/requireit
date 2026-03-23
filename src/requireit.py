@@ -55,40 +55,7 @@ def argparse_type(validator: Callable) -> Callable:
 def require_one_of(
     value: Any, *, allowed: Iterable[Any], name: str | None = None
 ) -> Any:
-    """Validate that ``value`` is one of ``allowed``.
-
-    Parameters
-    ----------
-    value : any
-        A scalar value to validate.
-    allowed : iterable of any
-        Allowed values.
-    name : str, optional
-        Variable name used in error messages.
-
-    Returns
-    -------
-    any
-        The original value.
-
-    Raises
-    ------
-    ValidationError
-        If the value is not in ``allowed``.
-
-    Examples
-    --------
-    >>> require_one_of("foo", allowed=("foo", "bar"))
-    'foo'
-    >>> require_one_of("baz", allowed=("foo", "bar"))
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must be one of 'bar', 'foo'
-    >>> require_one_of("Foo", allowed=("foo", "bar"))
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must be one of 'bar', 'foo'
-    """
+    """Require `value` is contained in `allowed`"""
     name = name or "value"
 
     try:
@@ -107,36 +74,7 @@ def require_one_of(
 def require_not_one_of(
     value: Any, *, forbidden: Iterable[Any], name: str | None = None
 ) -> Any:
-    """Validate that ``value`` is not one of ``forbidden``.
-
-    Parameters
-    ----------
-    value : any
-        A scalar value to validate.
-    forbidden : iterable of any
-        Forbidden values.
-    name : str, optional
-        Variable name used in error messages.
-
-    Returns
-    -------
-    any
-        The original value.
-
-    Raises
-    ------
-    ValidationError
-        If the value is in ``forbidden``.
-
-    Examples
-    --------
-    >>> require_not_one_of("foo", forbidden={"baz"})
-    'foo'
-    >>> require_not_one_of(None, forbidden=("baz", None))
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must not be one of
-    """
+    """Require `value` is not contained in `forbidden`"""
     name = name or "value"
 
     try:
@@ -150,6 +88,24 @@ def require_not_one_of(
         forbidden_str = ", ".join(sorted(repr(x) for x in collection_of_forbidden))
         raise ValidationError(f"{name} must not be one of {forbidden_str}")
     return value
+
+
+def require_contains(
+    collection: Collection[Any],
+    *,
+    required: Collection[Any] | None = None,
+    name: str | None = None,
+):
+    """Require `collection` contains required values."""
+    name = name or "collection"
+
+    missing = set(required) - set(collection) if required is not None else set()
+
+    if missing:
+        missing_values = ", ".join(sorted(missing))
+        raise ValidationError(f"{name} must contain {missing_values}")
+
+    return collection
 
 
 def require_between(
