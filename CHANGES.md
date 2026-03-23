@@ -14,6 +14,11 @@
 - Added new validator, ``require_length_between``, that checks that an object's length
   is between a minimum and maximum length.
   [#19](https://github.com/mcflugen/requireit/issues/19)
+- Renamed the ``require_length`` validators to better match the other validators.
+  ``require_length_is`` is now ``require_length``,
+  ``require_length_is_at_least`` is now ``require_length_at_least``,
+  ``require_length_is_at_most`` is now ``require_length_at_most``.
+  [#20](https://github.com/mcflugen/requireit/issues/20)
 
 ## 0.2.0 (2026-01-16)
 
