@@ -10,11 +10,14 @@ from requireit import import_package
 from requireit import require_array
 from requireit import require_between
 from requireit import require_contains
+from requireit import require_greater_than
+from requireit import require_greater_than_or_equal
 from requireit import require_length
 from requireit import require_length_at_least
 from requireit import require_length_at_most
 from requireit import require_length_between
 from requireit import require_less_than
+from requireit import require_less_than_or_equal
 from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
@@ -32,6 +35,8 @@ from requireit import require_positive
         pytest.param(
             partial(require_contains, {"foo", "bar"}, required=("baz",)), id="contains"
         ),
+        pytest.param(partial(require_greater_than, 0, 0), id=">"),
+        pytest.param(partial(require_greater_than_or_equal, 0, 1), id=">="),
         pytest.param(partial(require_length, [1, 2, 3], 2), id="length-2"),
         pytest.param(
             partial(require_length_at_least, [1, 2, 3], 4), id="length_at_least-4"
@@ -56,7 +61,8 @@ from requireit import require_positive
         pytest.param(partial(require_path_string, ""), id="path-empty"),
         pytest.param(partial(require_path_string, 0), id="path-0"),
         pytest.param(partial(require_path_string, "foo\x00bar"), id="path-null"),
-        pytest.param(partial(require_less_than, 0, -1), id="less_than"),
+        pytest.param(partial(require_less_than, 0, 0), id="<"),
+        pytest.param(partial(require_less_than_or_equal, 0, -1), id="<="),
     ),
 )
 def test_require_with_name(require):
@@ -76,6 +82,8 @@ def test_require_with_name(require):
             {"foo", "bar"},
             id="require_contains",
         ),
+        pytest.param(partial(require_greater_than, lower=0.0), 1.0, id=">"),
+        pytest.param(partial(require_greater_than_or_equal, lower=0), 0, id=">="),
         pytest.param(partial(require_length, length=2), (1, 2), id="length"),
         pytest.param(
             partial(require_length_at_least, length=1),
@@ -99,9 +107,8 @@ def test_require_with_name(require):
         ),
         pytest.param(require_positive, 1.0, id="require_positive"),
         pytest.param(require_path_string, "/foo", id="require_path_string"),
-        pytest.param(
-            partial(require_less_than, upper=1.0), 0.0, id="require_less_than"
-        ),
+        pytest.param(partial(require_less_than, upper=1.0), 0.0, id="<"),
+        pytest.param(partial(require_less_than_or_equal, upper=1), 1, id="<="),
     ),
 )
 def test_require_returns_input(require, value):
@@ -386,26 +393,23 @@ def test_require_path_string_bad_input(path, match):
 @pytest.mark.parametrize(
     "value", (0.0, np.asarray(0.0), np.asarray([0.0, -1.0]), np.asarray([[0.0]]))
 )
-def test_require_less_than_exclusive(value):
+def test_require_less_than(value):
     actual = require_less_than(value, upper=1.0)
     assert actual is value
+
+    with pytest.raises(ValidationError, match="^value must be < "):
+        require_less_than(value, upper=np.asarray(value).max())
 
 
 @pytest.mark.parametrize(
     "value", (0.0, np.asarray(0.0), np.asarray([0.0, -1.0]), np.asarray([[0.0]]))
 )
-def test_require_less_than_inclusive(value):
-    actual = require_less_than(value, upper=value, inclusive=True)
+def test_require_less_than_or_equal(value):
+    actual = require_less_than_or_equal(value, upper=value)
     assert actual is value
 
-    with pytest.raises(ValidationError, match="^value must be < "):
-        require_less_than(value, upper=np.asarray(value).max(), inclusive=False)
-
-
-@pytest.mark.parametrize("inclusive, op", ((True, "<="), (False, "<")))
-def test_require_less_than_error_message(inclusive, op):
-    with pytest.raises(ValidationError, match=f"^value must be {op} "):
-        require_less_than(2.0, upper=1.0, inclusive=inclusive)
+    with pytest.raises(ValidationError, match="^value must be <= "):
+        require_less_than_or_equal(value, upper=np.asarray(value).max() - 1e-6)
 
 
 @pytest.mark.parametrize(
