@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 from requireit import ValidationError
 from requireit import require_array
 from requireit import require_between
+from requireit import require_length_between
 from requireit import require_length_is
 from requireit import require_length_is_at_least
 from requireit import require_length_is_at_most
@@ -32,6 +33,12 @@ from requireit import require_positive
         ),
         pytest.param(
             partial(require_length_is_at_most, [1, 2, 3], 2), id="length_is_at_most-2"
+        ),
+        pytest.param(
+            partial(require_length_between, [1, 2, 3], 4, 9), id="length_between-short"
+        ),
+        pytest.param(
+            partial(require_length_between, [1, 2, 3], 0, 2), id="length_between-long"
         ),
         pytest.param(partial(require_negative, (0,)), id="negative-0"),
         pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
@@ -396,6 +403,7 @@ def test_require_length_is_ok(value):
     assert actual is value
     actual = require_length_is_at_most(value, 4)
     assert actual is value
+    actual = require_length_between(value, minimum=2, maximum=4)
 
 
 @pytest.mark.parametrize(
@@ -408,9 +416,15 @@ def test_require_length_is_not_ok(value):
         require_length_is_at_least(value, 4)
     with pytest.raises(ValidationError, match="value must have length <="):
         require_length_is_at_most(value, 2)
+    with pytest.raises(ValidationError, match="value must have length >="):
+        require_length_between(value, minimum=4, maximum=7)
+    with pytest.raises(ValidationError, match="value must have length <="):
+        require_length_between(value, minimum=0, maximum=2)
 
 
 @pytest.mark.parametrize("value", (0, True, 3.14, 1 + 2j, None))
 def test_require_length_without_len(value):
     with pytest.raises(ValidationError, match="value must have a length"):
         require_length_is(value, 2)
+    with pytest.raises(ValidationError, match="value must have a length"):
+        require_length_between(value, 0, 10)
