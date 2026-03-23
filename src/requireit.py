@@ -310,6 +310,11 @@ def require_path_string(path: Any, *, name: str | None = None) -> str:
     return path
 
 
+def require_greater_than(value: Any, lower: Any, *, name: str | None = None) -> Any:
+    """Require `value > lower`"""
+    return require_between(value, a_min=lower, inclusive_min=False, name=name)
+
+
 def require_less_than(
     value: Any,
     upper: Any,
