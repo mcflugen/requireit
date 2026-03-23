@@ -584,28 +584,8 @@ def require_length_between(
     return value
 
 
-def require_length_is(value: Any, length: int, *, name: str | None = None):
-    """Require a value to have an exact length.
-
-    Parameters
-    ----------
-    value : any
-        Object whose length will be validated.
-    length : int
-        Required length of the object.
-    name : str, optional
-        Name used in error messages.
-
-    Returns
-    -------
-    value
-        The validated object.
-
-    Raises
-    ------
-    ValidationError
-        If the object does not have the required length or has no length.
-    """
+def require_length(value: Any, length: int, *, name: str | None = None):
+    """Require `len(value) == length`"""
     name = name or "value"
 
     if _length_of(value, name=name) != length:
@@ -613,59 +593,15 @@ def require_length_is(value: Any, length: int, *, name: str | None = None):
     return value
 
 
-def require_length_is_at_least(value: Any, length: int, *, name: str | None = None):
-    """Require an object to have a minimum length.
-
-    Parameters
-    ----------
-    value : and
-        Object whose length will be validated.
-    length : int
-        Minimum allowed length.
-    name : str, optional
-        Name used in error messages.
-
-    Returns
-    -------
-    value
-        The validated object.
-
-    Raises
-    ------
-    ValidationError
-        If the object's length is less than `length` or has no length.
-    """
-    name = name or "value"
-
-    if _length_of(value, name=name) < length:
-        raise ValidationError(f"{name} must have length >= {length}")
-    return value
+def require_length_at_least(value: Any, length: int, *, name: str | None = None):
+    """Require `len(value) >= length`"""
+    return require_length_between(
+        value, minimum=length, maximum=None, inclusive_min=True, name=name
+    )
 
 
-def require_length_is_at_most(value: Any, length: int, *, name: str | None = None):
-    """Require an object to have a maximum length.
-
-    Parameters
-    ----------
-    value : any
-        Object whose length will be validated.
-    length : int
-        Maximum allowed length.
-    name : str, optional
-        Name used in error messages.
-
-    Returns
-    -------
-    value
-        The validated object.
-
-    Raises
-    ------
-    ValidationError
-        If the object's length exceeds `length` or has no length.
-    """
-    name = name or "value"
-
-    if _length_of(value, name=name) > length:
-        raise ValidationError(f"{name} must have length <= {length}")
-    return value
+def require_length_at_most(value: Any, length: int, *, name: str | None = None):
+    """Require `len(value) <= length`"""
+    return require_length_between(
+        value, minimum=None, maximum=length, inclusive_max=True, name=name
+    )
