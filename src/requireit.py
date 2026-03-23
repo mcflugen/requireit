@@ -183,134 +183,22 @@ def require_between(
 
 
 def require_positive(value: ArrayLike, name: str | None = None) -> ArrayLike:
-    """Validate that a value is strictly greater than zero.
-
-    Parameters
-    ----------
-    value : scalar or array-like
-        The input value(s) to be validated.
-    name : str, optional
-        Variable name used in error messages.
-
-    Returns
-    -------
-    value : scalar or array-like
-        The validated value.
-
-    Raises
-    ------
-    ValidationError
-        If any element of ``value`` is less than or equal to zero.
-
-    Examples
-    --------
-    >>> require_positive(1.0)
-    1.0
-    >>> require_positive(0.0)
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must be > 0.0
-    """
+    """Require `value > 0`"""
     return require_between(value, a_min=0.0, a_max=None, inclusive_min=False, name=name)
 
 
 def require_nonnegative(value: ArrayLike, name: str | None = None) -> ArrayLike:
-    """Validate that a value is greater than or equal to zero.
-
-    Parameters
-    ----------
-    value : scalar or array-like
-        The input value(s) to be validated.
-    name : str, optional
-        Variable name used in error messages.
-
-    Returns
-    -------
-    value : scalar or array-like
-        The validated value.
-
-    Raises
-    ------
-    ValidationError
-        If any element of ``value`` is less than zero.
-
-    Examples
-    --------
-    >>> require_nonnegative(-1.0)
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must be >= 0.0
-    >>> require_nonnegative(0.0)
-    0.0
-    >>> require_nonnegative(1.0)
-    1.0
-    """
+    """Require `value >= 0`"""
     return require_between(value, a_min=0.0, a_max=None, inclusive_min=True, name=name)
 
 
 def require_negative(value: ArrayLike, name: str | None = None) -> ArrayLike:
-    """Validate that a value is strictly less than zero.
-
-    Parameters
-    ----------
-    value : scalar or array-like
-        The input value(s) to be validated.
-    name : str, optional
-        Variable name used in error messages.
-
-    Returns
-    -------
-    value : scalar or array-like
-        The validated value.
-
-    Raises
-    ------
-    ValidationError
-        If any element of ``value`` is greater than or equal to zero.
-
-    Examples
-    --------
-    >>> require_negative(-1.0)
-    -1.0
-    >>> require_negative(0.0)
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must be < 0.0
-    """
+    """Require `value < 0`"""
     return require_between(value, a_min=None, a_max=0.0, inclusive_max=False, name=name)
 
 
 def require_nonpositive(value: ArrayLike, name: str | None = None) -> ArrayLike:
-    """Validate that a value is less than or equal to zero.
-
-    Parameters
-    ----------
-    value : scalar or array-like
-        The input value(s) to be validated.
-    name : str, optional
-        Variable name used in error messages.
-
-    Returns
-    -------
-    value : scalar or array-like
-        The validated value.
-
-    Raises
-    ------
-    ValidationError
-        If any element of ``value`` is greater than zero.
-
-    Examples
-    --------
-    >>> require_nonpositive(-1.0)
-    -1.0
-    >>> require_nonpositive(0.0)
-    0.0
-    >>> require_nonpositive(1.0)
-    Traceback (most recent call last):
-    ...
-    requireit.ValidationError: value must be <= 0.0
-    """
+    """Require `value <= 0`"""
     return require_between(value, a_min=None, a_max=0.0, inclusive_max=True, name=name)
 
 
