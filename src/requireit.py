@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import importlib
 from collections.abc import Callable
 from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Sized
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version
 from typing import Any
 
 import numpy as np
@@ -10,7 +14,10 @@ from numpy.typing import ArrayLike
 from numpy.typing import DTypeLike
 from numpy.typing import NDArray
 
-__version__ = "0.3.0"
+try:
+    __version__ = version("requireit")
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "unknown"
 
 
 class RequireItError(Exception):
