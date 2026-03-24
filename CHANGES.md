@@ -1,28 +1,36 @@
 # Release Notes
 
-## 0.3.0 (not yet released)
+## 0.3.0 (2026-03-23)
 
-- Added new validator, ``require_not_one_of``, that checks that value is not contained
-  in a forbidden set of values [#15](https://github.com/mcflugen/requireit/issues/15)
-- Added new validators that check if an object's length is exactly, at most, or at least
+### Features
+
+* Added `require_not_one_of` validator to ensure a value is not in a forbidden set
+  [#15](https://github.com/mcflugen/requireit/issues/15)
+* Added length validators to check that an object’s length is exactly, at most, or at least
   a given value [#16](https://github.com/mcflugen/requireit/issues/16)
-- Added a new fuction, ``argparse_type```, that allows a *requireit* validator to be
-  used as an *argparse* ``type=`` callable
+* Added `require_length_between` validator to check that an object’s length is within
+  a specified range [#19](https://github.com/mcflugen/requireit/issues/19)
+* Added `require_contains` validator to ensure a collection contains required values
+  [#21](https://github.com/mcflugen/requireit/issues/21)
+* Added `import_package` validator to check for and import a package
+  [#22](https://github.com/mcflugen/requireit/issues/22)
+* Added `argparse_type` to allow *requireit* validators to be used as
+  `argparse` `type=` callables
   [#17](https://github.com/mcflugen/requireit/issues/17)
-- Added additional unit test to check that all validators return the input value
-  (not a copy) on success [#18](https://github.com/mcflugen/requireit/issues/18)
-- Added new validator, ``require_length_between``, that checks that an object's length
-  is between a minimum and maximum length.
-  [#19](https://github.com/mcflugen/requireit/issues/19)
-- Renamed the ``require_length`` validators to better match the other validators.
-  ``require_length_is`` is now ``require_length``,
-  ``require_length_is_at_least`` is now ``require_length_at_least``,
-  ``require_length_is_at_most`` is now ``require_length_at_most``.
+
+### Changes
+
+* Renamed length validators for consistency:
+  `require_length_is` → `require_length`,
+  `require_length_is_at_least` → `require_length_at_least`,
+  `require_length_is_at_most` → `require_length_at_most`
   [#20](https://github.com/mcflugen/requireit/issues/20)
-- Added new validator, ``require_contains``, that checks if a collection contains
-  a set of required values. [#21](https://github.com/mcflugen/requireit/issues/21)
-- Added new validator, ``import_package``, that checks to see if a package exists and
-  then imports it. [#22](https://github.com/mcflugen/requireit/issues/22)
+
+### Tests
+
+* Added unit tests to verify that validators return the input value (not a copy)
+  on success [#18](https://github.com/mcflugen/requireit/issues/18)
+
 
 ## 0.2.0 (2026-01-16)
 
