@@ -1,41 +1,28 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      publish_to:
+        description: "Where to publish"
+        type: choice
+        required: true
+        default: none
+        options:
+          - none
+          - https://test.pypi.org/legacy/
+          - https://upload.pypi.org/legacy/
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
-  check-tag:
-    # Run on external PRs, but not on internal PRs, to avoid duplicate runs
-    if: |
-      github.event_name == 'push' ||
-      github.event.pull_request.head.repo.full_name != github.repository
-
-    runs-on: ubuntu-latest
-    outputs:
-      publish_url: ${{ steps.check-publish.outputs.publish_url }}
-
-    steps:
-      - name: Check if this is a release/prerelease
-        id: check-publish
-        run: |
-          tag_name="${GITHUB_REF#refs/tags/}"
-          if [[ "$tag_name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\.dev[0-9]+$ ]]; then
-            publish_url="https://test.pypi.org/legacy/"
-          elif [[ "$tag_name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            publish_url="https://upload.pypi.org/legacy/"
-          else
-            publish_url="none"
-          fi
-          echo "publish_url=$publish_url" >> "$GITHUB_OUTPUT"
-          echo "tag_name=$tag_name"
-          echo "publish_url=$publish_url"
-
   build-dist:
     name: Build source distribution
-    needs: check-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -116,11 +103,11 @@ jobs:
 
   publish:
     needs:
-      - check-tag
       - coverage
       - test
     name: "Publish to PyPI/TestPyPI"
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to != 'none'
 
     permissions:
       id-token: write
@@ -131,10 +118,12 @@ jobs:
           pattern: "build-*"
           merge-multiple: true
           path: ${{ github.workspace }}/dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        if: ${{ startsWith(needs.check-tag.outputs.publish_url, 'http') }}
+
+      - name: Publish to testpypi
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: ${{ needs.check-tag.outputs.publish_url }}
+          repository-url: ${{ inputs.publish_to }}
+          packages-dir: dist
           skip-existing: true
           print-hash: true
           verify-metadata: false
