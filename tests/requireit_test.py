@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 from requireit import ValidationError
 from requireit import require_array
 from requireit import require_between
+from requireit import require_contains
 from requireit import require_length
 from requireit import require_length_at_least
 from requireit import require_length_at_most
@@ -27,6 +28,9 @@ from requireit import require_positive
     (
         pytest.param(partial(require_between, -1, 0, 1), id="between-below"),
         pytest.param(partial(require_between, 2, 0, 1), id="between-above"),
+        pytest.param(
+            partial(require_contains, {"foo", "bar"}, required=("baz",)), id="contains"
+        ),
         pytest.param(partial(require_length, [1, 2, 3], 2), id="length-2"),
         pytest.param(
             partial(require_length_at_least, [1, 2, 3], 4), id="length_at_least-4"
@@ -65,6 +69,11 @@ def test_require_with_name(require):
         pytest.param(require_array, np.asarray(0.0), id="require_array"),
         pytest.param(
             partial(require_between, a_min=-1, a_max=1), (0.0,), id="require_between"
+        ),
+        pytest.param(
+            partial(require_contains, required={"bar"}),
+            {"foo", "bar"},
+            id="require_contains",
         ),
         pytest.param(partial(require_length, length=2), (1, 2), id="length"),
         pytest.param(
@@ -433,3 +442,16 @@ def test_require_length_without_len(value):
         require_length(value, 2)
     with pytest.raises(ValidationError, match="value must have a length"):
         require_length_between(value, 0, 10)
+
+
+@pytest.mark.parametrize("value", ({"foo", "bar"}, ("foo", "bar")))
+@pytest.mark.parametrize("required", ({"foo"}, {"bar"}, {}, None))
+def test_require_contains(value, required):
+    actual = require_contains(value, required=required)
+    assert actual is value
+
+
+@pytest.mark.parametrize("value", ({"foo", "bar"}, ("foo",), (), {}))
+def test_require_contains_empty_always_validates(value):
+    actual = require_contains(value, required={})
+    assert actual is value
