@@ -21,7 +21,8 @@
   [#20](https://github.com/mcflugen/requireit/issues/20)
 - Added new validator, ``require_contains``, that checks if a collection contains
   a set of required values. [#21](https://github.com/mcflugen/requireit/issues/21)
-
+- Added new validator, ``import_package``, that checks to see if a package exists and
+  then imports it. [#22](https://github.com/mcflugen/requireit/issues/22)
 
 ## 0.2.0 (2026-01-16)
 

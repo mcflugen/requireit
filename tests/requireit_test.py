@@ -6,6 +6,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from requireit import ValidationError
+from requireit import import_package
 from requireit import require_array
 from requireit import require_between
 from requireit import require_contains
@@ -455,3 +456,20 @@ def test_require_contains(value, required):
 def test_require_contains_empty_always_validates(value):
     actual = require_contains(value, required={})
     assert actual is value
+
+
+def test_import_package_returns_imported_module():
+    actual = import_package("requireit")
+    assert actual.__name__ == "requireit"
+
+
+def test_import_package_returns_same_module_as_importlib():
+    import requireit
+
+    actual = import_package("requireit")
+    assert actual is requireit
+
+
+def test_import_package_raises_for_missing_package():
+    with pytest.raises(ValidationError, match="not_a_package must be installed"):
+        import_package("not_a_package")
