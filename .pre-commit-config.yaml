@@ -3,11 +3,12 @@ repos:
   rev: 26.3.1
   hooks:
   - id: black
+    args: [--target-version=py310]
     name: black
     description: "Black: The uncompromising Python code formatter"
     entry: black
     language: python
-    language_version: python3
+    language_version: python3.14
     minimum_pre_commit_version: 2.9.2
     require_serial: true
     types_or: [python, pyi]
