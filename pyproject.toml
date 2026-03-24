@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "requireit"
+version = "0.3.0"
 description = "Tiny runtime validators for explicit precondition checks"
 authors = [
   {name = "Eric Hutton", email = "mcflugen@gmail.com"},
@@ -37,7 +38,7 @@ requires-python = ">=3.10"
 dependencies = [
   "numpy",
 ]
-dynamic = ["readme", "version"]
+dynamic = ["readme"]
 
 [project.urls]
 homepage = "https://github.com/mcflugen/requireit"
@@ -54,7 +55,6 @@ py-modules = ["requireit"]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "AUTHORS.md", "CHANGES.md"], content-type="text/markdown"}
-version = {attr = "requireit.__version__"}
 
 [tool.pytest.ini_options]
 minversion = "6.0"
