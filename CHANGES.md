@@ -1,5 +1,13 @@
 # Release Notes
 
+## 0.4.0 (unreleased)
+
+### Features
+
+* Added `require_greater_than`, `require_greater_than_or_equal`,
+  `require_less_than_or_equal` validators.
+  [#26](https://github.com/mcflugen/requireit/issues/26)
+
 ## 0.3.0 (2026-03-23)
 
 ### Features

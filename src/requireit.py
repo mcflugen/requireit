@@ -310,31 +310,28 @@ def require_path_string(path: Any, *, name: str | None = None) -> str:
     return path
 
 
-def require_less_than(
-    value: Any,
-    upper: Any,
-    *,
-    inclusive: bool = False,
-    name: str | None = None,
+def require_greater_than(value: Any, lower: Any, *, name: str | None = None) -> Any:
+    """Require `value > lower`"""
+    return require_between(value, a_min=lower, inclusive_min=False, name=name)
+
+
+def require_greater_than_or_equal(
+    value: Any, lower: Any, *, name: str | None = None
 ) -> Any:
+    """Require `value >= lower`"""
+    return require_between(value, a_min=lower, inclusive_min=True, name=name)
+
+
+def require_less_than(value: Any, upper: Any, *, name: str | None = None) -> Any:
     """Require `value < upper`"""
-    name = name or "value"
+    return require_between(value, a_max=upper, inclusive_max=False, name=name)
 
-    value_array = np.asarray(value)
-    upper = np.asarray(upper)
 
-    if inclusive:
-        violated = np.greater(value_array, upper)
-        op = "<="
-    else:
-        violated = np.greater_equal(value_array, upper)
-        op = "<"
-
-    if np.any(violated):
-        upper_str = upper.item() if upper.size == 1 else "upper"
-        raise ValidationError(f"{name} must be {op} {upper_str}")
-
-    return value
+def require_less_than_or_equal(
+    value: Any, upper: Any, *, name: str | None = None
+) -> Any:
+    """Require `value <= upper`"""
+    return require_between(value, a_max=upper, inclusive_max=True, name=name)
 
 
 def _length_of(value, *, name: str | None):
