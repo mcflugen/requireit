@@ -1,5 +1,13 @@
 # Release Notes
 
+
+## 0.5.0 (unreleased)
+
+### Features
+
+* Extended ``require_array`` to allow flexible shape validation with support
+  for wildcard dimensions (None or named axes).
+
 ## 0.4.0 (2026-03-27)
 
 ### Features
