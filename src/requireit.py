@@ -219,8 +219,9 @@ def require_array(
         The array to be validated.
     dtype : data-type, optional
         The required data type.
-    shape : tuple of int, optional
-        The required shape.
+    shape : tuple of int, str, or None, optional
+        The required shape. Integers specify exact sizes, while ``None`` or
+        strings act as wildcards and allow any size for that dimension.
     writable : bool, optional
         Require the array to be writable.
     contiguous : bool, optional
@@ -245,11 +246,16 @@ def require_array(
     Traceback (most recent call last):
     ...
     requireit.ValidationError: array must have shape (2, 2)
+
+    >>> require_array(np.ones((10, 3)), shape=("n", 2))
+    Traceback (most recent call last):
+    ...
+    requireit.ValidationError: array must have shape ('n', 2)
     """
     name = name or "array"
 
-    if shape is not None and array.shape != shape:
-        raise ValidationError(f"{name} must have shape {shape}")
+    if shape is not None:
+        require_shape(array, shape, name=name)
 
     if dtype is not None and array.dtype != np.dtype(dtype):
         raise ValidationError(f"{name} must have dtype {dtype}")
@@ -261,6 +267,30 @@ def require_array(
         raise ValidationError(f"{name} must be contiguous")
 
     return array
+
+
+def require_shape(
+    value: ArrayLike,
+    shape: tuple[int | str | None, ...],
+    *,
+    name: str | None = None,
+):
+    """Validate that an array has the specified shape."""
+    name = name or "array"
+
+    value_array = np.asarray(value)
+
+    if any(type(dim) not in (int, str) and dim is not None for dim in shape):
+        raise TypeError("shape must contain int, str, or None")
+
+    if value_array.ndim != len(shape):
+        raise ValidationError(f"{name} must have {len(shape)} dimensions")
+
+    for _, (actual, expected) in enumerate(zip(value_array.shape, shape)):
+        if isinstance(expected, int) and actual != expected:
+            raise ValidationError(f"{name} must have shape {shape!r}")
+
+    return value
 
 
 def require_path_string(path: Any, *, name: str | None = None) -> str:

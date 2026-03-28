@@ -25,6 +25,7 @@ from requireit import require_not_one_of
 from requireit import require_one_of
 from requireit import require_path_string
 from requireit import require_positive
+from requireit import require_shape
 
 
 @pytest.mark.parametrize(
@@ -319,15 +320,30 @@ def test_require_dtype_mismatch_raises(array, dtype, name):
 @pytest.mark.parametrize(
     "array,shape",
     [
-        ([0, 0, 0, 0, 0, 0], (2, 3)),
         ([[0, 0, 0], [0, 0, 0]], (3, 2)),
+        ([[0, 0], [0, 0], [0, 0]], (2, 3)),
+    ],
+)
+@pytest.mark.parametrize("name", (None, "foobar"))
+def test_require_shape(array, shape, name):
+    prefix = re.escape(name or "array")
+    with pytest.raises(ValidationError, match=f"^{prefix} must have shape"):
+        require_array(np.asarray(array), shape=shape, name=name)
+
+
+@pytest.mark.parametrize(
+    "array,shape",
+    [
+        ([0, 0, 0, 0, 0, 0], (2, 3)),
         ([[0, 0], [0, 0], [0, 0]], (6,)),
     ],
 )
 @pytest.mark.parametrize("name", (None, "foobar"))
-def test_require_shape_mismatch(array, shape, name):
+def test_require_shape_dimension_mismatch(array, shape, name):
     prefix = re.escape(name or "array")
-    with pytest.raises(ValidationError, match=f"^{prefix} must have shape"):
+    with pytest.raises(
+        ValidationError, match=f"^{prefix} must have {len(shape)} dimensions"
+    ):
         require_array(np.asarray(array), shape=shape, name=name)
 
 
@@ -367,6 +383,42 @@ def test_require_contiguous_requirement_raises_for_noncontiguous(array, name):
     prefix = re.escape(name or "array")
     with pytest.raises(ValidationError, match=f"^{prefix} must be contiguous"):
         require_array(array, contiguous=True, name=name)
+
+
+@pytest.mark.parametrize(
+    "array, shape",
+    (
+        ([1, 2, 3], (3,)),
+        ([1, 2, 3], ("n",)),
+        ([1, 2, 3], (None,)),
+        ([[1, 2, 3]], (1, 3)),
+        ([[1, 2, 3]], ("n", 3)),
+        ([[1, 2, 3]], ("n", "n")),
+        ([[1, 2, 3]], (1, "n")),
+        ([[1, 2, 3]], (None, "n")),
+    ),
+)
+def test_require_shape_is_ok(array, shape):
+    actual = require_shape(array, shape)
+    assert actual is array
+
+
+@pytest.mark.parametrize("shape", [(1,), (4,)])
+def test_require_shape_with_wrong_shape(shape):
+    with pytest.raises(ValidationError):
+        require_shape([1, 2, 3], shape=shape)
+
+
+@pytest.mark.parametrize("shape", [(1, "n"), ("n", 1), (1, 2)])
+def test_require_shape_with_wrong_dimensionality(shape):
+    with pytest.raises(ValidationError):
+        require_shape([1, 2, 3], shape=shape)
+
+
+@pytest.mark.parametrize("shape", [(True, 2), (2.5, 2), (object(), 2)])
+def test_require_shape_raises_for_invalid_shape(shape):
+    with pytest.raises(TypeError):
+        require_shape(np.ones((3, 2)), shape)
 
 
 @pytest.mark.parametrize(
