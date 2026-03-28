@@ -51,85 +51,47 @@ aggregation, you probably want something heavier.
 pip install requireit
 ```
 
-## API overview
+## API Summary
 
 All validators:
 
+* validate the first argument
 * return the original value/array on success
 * raise `ValidationError` on failure
 
-### Membership validation
+### Arrays
 
-```python
-require_one_of(value, *, allowed)
-```
+* `require_array`: Validate an array to satisfy requirements.
+* `require_shape`: Validate that an array has the specified shape.
 
-Validate that a value is one of a set of allowed values.
+### General
 
-```python
-require_one_of("foo", allowed=("foo", "bar"))  # ok, returns "foo"
-require_one_of("baz", allowed=("foo", "bar"))  # raises ValidationError
-```
+* `require_contains`: Require `collection` contains required values.
+* `require_not_one_of`: Require `value` is not contained in `forbidden`
+* `require_one_of`: Require `value` is contained in `allowed`
 
-### Range validation
+### Length
 
-```python
-require_between(
-    value,
-    a_min=None,
-    a_max=None,
-    *,
-    inclusive_min=True,
-    inclusive_max=True,
-)
-```
+* `require_length`: Require `len(value) == length`
+* `require_length_at_least`: Require `len(value) >= length`
+* `require_length_at_most`: Require `len(value) <= length`
+* `require_length_between`: Require `len(value)` falls within a specified range.
 
-Validate that a scalar or array lies within specified bounds.
+### Numeric
 
-* Bounds may be inclusive or strict
-* Validation fails if **any element** violates the constraint
+* `require_between`: Validate that a value lies within a specified interval.
+* `require_greater_than`: Require `value > lower`
+* `require_greater_than_or_equal`: Require `value >= lower`
+* `require_less_than`: Require `value < upper`
+* `require_less_than_or_equal`: Require `value <= upper`
+* `require_negative`: Require `value < 0`
+* `require_nonnegative`: Require `value >= 0`
+* `require_nonpositive`: Require `value <= 0`
+* `require_positive`: Require `value > 0`
 
-```python
-require_between([0, 1], a_min=0.0) # ok, returns [0, 1]
-require_between([0, 1], a_min=0.0, inclusive_min=False) # raises
-```
+### Paths
 
-### Sign-based helpers
-
-Convenience wrappers around `require_between`:
-
-```python
-require_positive(value)  # > 0
-require_nonnegative(value)  # >= 0
-require_negative(value)  # < 0
-require_nonpositive(value)  # <= 0
-```
-
-All accept scalars or array-like inputs.
-
-
-### Array validation
-
-```python
-require_array(
-    array,
-    *,
-    dtype=None,
-    shape=None,
-    writable=None,
-    contiguous=None,
-)
-```
-
-Validate NumPy array properties without copying or modifying the array.
-
-```python
-require_array(x, dtype=np.float64, shape=(100,))
-require_array(x, writable=True, contiguous=True)
-```
-
-Checks are applied only if the corresponding keyword is provided.
-
+* `require_path_string`: Validate that a value is a string intended to be used as a path.
 
 ## Errors
 
