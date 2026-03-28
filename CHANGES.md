@@ -1,7 +1,7 @@
 # Release Notes
 
 
-## 0.5.0 (unreleased)
+## 0.5.0 (2026-03-28)
 
 ### Features
 
