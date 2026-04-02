@@ -1,6 +1,13 @@
 # Release Notes
 
 
+## 0.6.0 (unreleased)
+
+### Features
+
+* Allow the `dtype` keyword of `require_array` to accept *nupy* dtype families such as
+  `np.integer` and `np.floating` in addition to exact dtypes.
+
 ## 0.5.0 (2026-03-28)
 
 ### Features
