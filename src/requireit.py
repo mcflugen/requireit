@@ -218,7 +218,10 @@ def require_array(
     array : ndarray
         The array to be validated.
     dtype : data-type, optional
-        The required data type.
+        Required data type. May be an exact dtype (e.g., ``np.int64``) or a
+        *NumP*y dtype family (e.g., ``np.integer``, ``np.floating``). The array
+        dtype must be compatible with ``dtype`` as determined by
+        ``np.issubdtype``.
     shape : tuple of int, str, or None, optional
         The required shape. Integers specify exact sizes, while ``None`` or
         strings act as wildcards and allow any size for that dimension.
@@ -257,7 +260,7 @@ def require_array(
     if shape is not None:
         require_shape(array, shape, name=name)
 
-    if dtype is not None and array.dtype != np.dtype(dtype):
+    if dtype is not None and not np.issubdtype(array.dtype, dtype):
         raise ValidationError(f"{name} must have dtype {dtype}")
 
     if writable and not array.flags.writeable:

@@ -289,7 +289,7 @@ def test_require_returns_same_object_when_valid(array):
 
 @pytest.mark.parametrize(
     "dtype",
-    [np.float32, "float32", np.dtype("float32")],
+    [np.float32, "float32", np.dtype("float32"), np.floating],
 )
 @pytest.mark.parametrize("array", ([1.0, 2.0, 3.0, 4.0], []))
 def test_require_dtype_accepts_multiple_specifiers(array, dtype):
@@ -305,9 +305,11 @@ def test_require_dtype_accepts_multiple_specifiers(array, dtype):
         ([1.0, 2.0, 3.0], int),
         ([1.0, 2.0, 3.0], bool),
         ([1.0, 2.0, 3.0], complex),
+        ([1.0, 2.0, 3.0], np.integer),
         ([1, 2, 3], float),
         ([1, 2, 3], complex),
         ([1, 2, 3], bool),
+        ([1, 2, 3], np.floating),
     ),
 )
 @pytest.mark.parametrize("name", (None, "foobar"))
