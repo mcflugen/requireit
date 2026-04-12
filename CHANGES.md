@@ -8,6 +8,10 @@
 * Added `require_sorted` validator that checks if values are sorted in
   ascending order. [#35](https://github.com/mcflugen/requireit/issues/35)
 
+### Changes
+
+* Dropped Python 3.10 support. [#37](https://github.com/mcflugen/requireit/issues/37)
+
 ## 0.6.0 (2026-04-01)
 
 ### Features
