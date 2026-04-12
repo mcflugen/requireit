@@ -10,6 +10,7 @@ from requireit import import_package
 from requireit import require_array
 from requireit import require_between
 from requireit import require_contains
+from requireit import require_dtype
 from requireit import require_greater_than
 from requireit import require_greater_than_or_equal
 from requireit import require_length
@@ -37,6 +38,7 @@ from requireit import require_sorted
         pytest.param(
             partial(require_contains, {"foo", "bar"}, required=("baz",)), id="contains"
         ),
+        pytest.param(partial(require_dtype, [0], "float"), id="dtype"),
         pytest.param(partial(require_greater_than, 0, 0), id=">"),
         pytest.param(partial(require_greater_than_or_equal, 0, 1), id=">="),
         pytest.param(partial(require_length, [1, 2, 3], 2), id="length-2"),
@@ -85,6 +87,7 @@ def test_require_with_name(require):
             {"foo", "bar"},
             id="require_contains",
         ),
+        pytest.param(partial(require_dtype, dtype=float), [0.0], id="require_dtype"),
         pytest.param(partial(require_greater_than, lower=0.0), 1.0, id=">"),
         pytest.param(partial(require_greater_than_or_equal, lower=0), 0, id=">="),
         pytest.param(partial(require_length, length=2), (1, 2), id="length"),
@@ -558,3 +561,43 @@ def test_require_sorted_not_sorted(values, strict):
     msg = "strictly increasing" if strict else "non-decreasing"
     with pytest.raises(ValidationError, match=f"array must be {msg}"):
         require_sorted(values, strict=strict)
+
+
+@pytest.mark.parametrize(
+    "allow_cast, dtype",
+    (
+        (False, np.int8),
+        (False, np.integer),
+        (True, np.int64),
+        (True, np.int32),
+        (True, np.int8),
+        (True, float),
+    ),
+)
+def test_require_dtype_ok(dtype, allow_cast):
+    values = np.asarray([1, 2, 3], dtype=np.int8)
+    actual = require_dtype(values, dtype=dtype, allow_cast=allow_cast)
+    assert actual is values
+
+
+@pytest.mark.parametrize(
+    "allow_cast, dtype",
+    (
+        (False, np.int8),
+        (False, np.int32),
+        (False, np.integer),
+        (True, np.int64),
+        (True, np.int32),
+        (True, np.int8),
+    ),
+)
+def test_require_dtype_not_ok(dtype, allow_cast):
+    values = np.asarray([1, 2, 3], dtype=np.float32)
+    with pytest.raises(ValidationError, match="array must have dtype"):
+        require_dtype(values, dtype=dtype, allow_cast=allow_cast)
+
+
+@pytest.mark.parametrize("dtype", (np.generic, np.number, np.integer, np.floating))
+def test_require_dtype_concrete_type_with_allow_cast(dtype):
+    with pytest.raises(TypeError, match="dtype must be a concrete dtype"):
+        require_dtype([1.0, 2.0], dtype=dtype, allow_cast=True)
