@@ -62,6 +62,7 @@ All validators:
 ### Arrays
 
 * `require_array`: Validate an array to satisfy requirements.
+* `require_dtype`: Validate that an array has a required dtype or can be safely cast to it.
 * `require_shape`: Validate that an array has the specified shape.
 * `require_sorted`: Validate that an array is sorted.
 

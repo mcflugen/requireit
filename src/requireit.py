@@ -203,19 +203,20 @@ def require_nonpositive(value: ArrayLike, name: str | None = None) -> ArrayLike:
 
 
 def require_array(
-    array: NDArray,
+    values: NDArray,
     *,
     dtype: DTypeLike | None = None,
     shape: tuple[int, ...] | None = None,
     writable: bool | None = None,
     contiguous: bool | None = None,
+    allow_cast: bool = False,
     name: str | None = None,
 ):
     """Validate an array to satisfy requirements.
 
     Parameters
     ----------
-    array : ndarray
+    values : ndarray
         The array to be validated.
     dtype : data-type, optional
         Required data type. May be an exact dtype (e.g., ``np.int64``) or a
@@ -229,6 +230,9 @@ def require_array(
         Require the array to be writable.
     contiguous : bool, optional
         Require the array to be c-contiguous.
+    allow_cast : bool, optional
+        If `allow_cast` is ``False``, the array `dtype` must be a subdtype of
+        `dtype`, otherwise it must be safely castable to `dtype`.
     name : str, optional
         Variable name used in error messages.
 
@@ -257,11 +261,13 @@ def require_array(
     """
     name = name or "array"
 
+    array = np.asarray(values)
+
     if shape is not None:
         require_shape(array, shape, name=name)
 
-    if dtype is not None and not np.issubdtype(array.dtype, dtype):
-        raise ValidationError(f"{name} must have dtype {dtype}")
+    if dtype is not None:
+        require_dtype(array, dtype, allow_cast=allow_cast, name=name)
 
     if writable and not array.flags.writeable:
         raise ValidationError(f"{name} must be writable")
@@ -269,7 +275,39 @@ def require_array(
     if contiguous and not array.flags.c_contiguous:
         raise ValidationError(f"{name} must be contiguous")
 
-    return array
+    return values
+
+
+def require_dtype(
+    value: ArrayLike,
+    dtype: DTypeLike,
+    *,
+    allow_cast: bool = False,
+    name: str | None = None,
+):
+    """Validate that an array has a required dtype or can be safely cast to it."""
+    name = name or "array"
+
+    array = np.asarray(value)
+
+    try:
+        concrete_dtype = np.dtype(dtype)
+    except TypeError:
+        concrete_dtype = None
+
+    if allow_cast:
+        if concrete_dtype is None:
+            raise TypeError("dtype must be a concrete dtype with allow_cast=True")
+
+        if not np.can_cast(array.dtype, concrete_dtype, casting="safe"):
+            raise ValidationError(
+                f"{name} must have dtype {dtype} or be safely castable to it"
+            )
+    else:
+        if not np.issubdtype(array.dtype, dtype):
+            raise ValidationError(f"{name} must have dtype {concrete_dtype}")
+
+    return value
 
 
 def require_sorted(value: ArrayLike, *, strict=False, name: str | None = None):

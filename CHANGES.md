@@ -7,6 +7,9 @@
 
 * Added `require_sorted` validator that checks if values are sorted in
   ascending order. [#35](https://github.com/mcflugen/requireit/issues/35)
+* Added `require_dtype` validator that checks if values are of a given
+  dtype or, optionally, can be safely cast to that dtype.
+  [#36](https://github.com/mcflugen/requireit/issues/36)
 
 ### Changes
 
