@@ -272,6 +272,24 @@ def require_array(
     return array
 
 
+def require_sorted(value: ArrayLike, *, strict=False, name: str | None = None):
+    """Validate that an array is sorted."""
+    name = name or "array"
+
+    value_array = require_shape(np.asarray(value), ("n",), name=name)
+
+    if value_array.size > 1:
+        diff = np.diff(value_array)
+
+        is_sorted = np.all(diff > 0) if strict else np.all(diff >= 0)
+
+        if not is_sorted:
+            kind = "strictly increasing" if strict else "non-decreasing"
+            raise ValidationError(f"{name} must be {kind}")
+
+    return value
+
+
 def require_shape(
     value: ArrayLike,
     shape: tuple[int | str | None, ...],

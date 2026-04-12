@@ -63,6 +63,7 @@ All validators:
 
 * `require_array`: Validate an array to satisfy requirements.
 * `require_shape`: Validate that an array has the specified shape.
+* `require_sorted`: Validate that an array is sorted.
 
 ### General
 
