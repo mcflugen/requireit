@@ -26,6 +26,7 @@ from requireit import require_one_of
 from requireit import require_path_string
 from requireit import require_positive
 from requireit import require_shape
+from requireit import require_sorted
 
 
 @pytest.mark.parametrize(
@@ -64,6 +65,7 @@ from requireit import require_shape
         pytest.param(partial(require_path_string, "foo\x00bar"), id="path-null"),
         pytest.param(partial(require_less_than, 0, 0), id="<"),
         pytest.param(partial(require_less_than_or_equal, 0, -1), id="<="),
+        pytest.param(partial(require_sorted, [0, 1, 0]), id="sorted"),
     ),
 )
 def test_require_with_name(require):
@@ -110,6 +112,7 @@ def test_require_with_name(require):
         pytest.param(require_path_string, "/foo", id="require_path_string"),
         pytest.param(partial(require_less_than, upper=1.0), 0.0, id="<"),
         pytest.param(partial(require_less_than_or_equal, upper=1), 1, id="<="),
+        pytest.param(require_sorted, [0, 1, 2], id="sorted"),
     ),
 )
 def test_require_returns_input(require, value):
@@ -531,3 +534,27 @@ def test_import_package_returns_same_module_as_importlib():
 def test_import_package_raises_for_missing_package():
     with pytest.raises(ValidationError, match="not_a_package must be installed"):
         import_package("not_a_package")
+
+
+@pytest.mark.parametrize("values", ([], [1], [0.0, 1.0, 2.0], [-1, 2, 7, 8], [1]))
+def test_require_sorted_strict(values):
+    assert_array_equal(require_sorted(values, strict=True), values)
+
+
+@pytest.mark.parametrize("values", ([], [1], [0.0, 1.0, 1.0], [-1, 7, 7, 8]))
+def test_require_sorted_not_strict(values):
+    assert_array_equal(require_sorted(values, strict=False), values)
+
+
+@pytest.mark.parametrize(
+    "values, strict",
+    (
+        ([0.0, 1.0, 1.0], True),
+        ([-1, 7, 7, 8], True),
+        ([0, -1, 2], False),
+    ),
+)
+def test_require_sorted_not_sorted(values, strict):
+    msg = "strictly increasing" if strict else "non-decreasing"
+    with pytest.raises(ValidationError, match=f"array must be {msg}"):
+        require_sorted(values, strict=strict)
