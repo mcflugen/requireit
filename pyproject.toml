@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "requireit"
-version = "0.6.1.dev0"
+version = "0.7.1.dev0"
 description = "Tiny runtime validators for explicit precondition checks"
 authors = [
   {name = "Eric Hutton", email = "mcflugen@gmail.com"},
