@@ -1,26 +1,28 @@
 # Release Notes
 
 
-## 0.7.0 (unreleased)
+## 0.7.0 (2026-04-12)
 
 ### Features
 
-* Added `require_sorted` validator that checks if values are sorted in
-  ascending order. [#35](https://github.com/mcflugen/requireit/issues/35)
-* Added `require_dtype` validator that checks if values are of a given
-  dtype or, optionally, can be safely cast to that dtype.
+* Added `require_sorted` to check that values are sorted in ascending order.
+  [#35](https://github.com/mcflugen/requireit/issues/35)
+* Added `require_dtype` to check that values have a given dtype or, optionally,
+  can be safely cast to that dtype.
   [#36](https://github.com/mcflugen/requireit/issues/36)
 
 ### Changes
 
-* Dropped Python 3.10 support. [#37](https://github.com/mcflugen/requireit/issues/37)
+* Dropped support for Python 3.10.
+  [#37](https://github.com/mcflugen/requireit/issues/37)
 
 ## 0.6.0 (2026-04-01)
 
 ### Features
 
-* Allow the `dtype` keyword of `require_array` to accept *nupy* dtype families such as
+* Allow the `dtype` keyword of `require_array` to accept *numpy* dtype families such as
   `np.integer` and `np.floating` in addition to exact dtypes.
+  [#32](https://github.com/mcflugen/requireit/issues/32)
 
 ## 0.5.0 (2026-03-28)
 
@@ -28,6 +30,7 @@
 
 * Extended ``require_array`` to allow flexible shape validation with support
   for wildcard dimensions (None or named axes).
+  [#29](https://github.com/mcflugen/requireit/issues/29)
 
 ## 0.4.0 (2026-03-27)
 
