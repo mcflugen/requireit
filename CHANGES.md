@@ -1,6 +1,13 @@
 # Release Notes
 
 
+## 0.8.0 (unreleased)
+
+### Features
+
+* Added `raise_as` context manager to re-raise `ValidationError` as a
+  user-specified exception type.
+
 ## 0.7.0 (2026-04-12)
 
 ### Features
