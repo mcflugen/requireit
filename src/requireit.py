@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import contextlib
 import importlib
 from collections.abc import Callable
 from collections.abc import Collection
 from collections.abc import Iterable
+from collections.abc import Iterator
 from collections.abc import Sized
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version
@@ -26,6 +28,15 @@ class RequireItError(Exception):
 
 class ValidationError(RequireItError):
     """Error to indicate that a validation has failed."""
+
+
+@contextlib.contextmanager
+def raise_as(error_type: type[Exception]) -> Iterator[None]:
+    """Raise ``ValidationError`` as another exception type."""
+    try:
+        yield
+    except ValidationError as exc:
+        raise error_type(str(exc)) from exc
 
 
 def argparse_type(validator: Callable) -> Callable:

@@ -7,6 +7,7 @@ from numpy.testing import assert_array_equal
 
 from requireit import ValidationError
 from requireit import import_package
+from requireit import raise_as
 from requireit import require_array
 from requireit import require_between
 from requireit import require_contains
@@ -601,3 +602,8 @@ def test_require_dtype_not_ok(dtype, allow_cast):
 def test_require_dtype_concrete_type_with_allow_cast(dtype):
     with pytest.raises(TypeError, match="dtype must be a concrete dtype"):
         require_dtype([1.0, 2.0], dtype=dtype, allow_cast=True)
+
+
+def test_raise_as():
+    with pytest.raises(ValueError, match="foobar!"), raise_as(ValueError):
+        raise ValidationError("foobar!")
