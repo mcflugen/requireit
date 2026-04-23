@@ -1,7 +1,7 @@
 # Release Notes
 
 
-## 0.8.0 (unreleased)
+## 0.8.0 (2026-04-14)
 
 ### Features
 
