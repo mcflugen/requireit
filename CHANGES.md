@@ -1,6 +1,13 @@
 # Release Notes
 
 
+## 0.8.1 (unreleased)
+
+## Fixes
+
+* Fixed CI test jobs so macOS runners use the Python version selected by
+  `actions/setup-python`.
+
 ## 0.8.0 (2026-04-14)
 
 ### Features
