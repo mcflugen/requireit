@@ -520,6 +520,23 @@ def require_length_at_most(value: Any, length: int, *, name: str | None = None):
     )
 
 
+def require_instance[T](
+    value: Any, types: type[T] | tuple[type[T], ...], *, name: str | None = None
+) -> T:
+    """Require `value` is an instance of one or more types."""
+    name = name or "value"
+
+    if not isinstance(value, types):
+        if isinstance(types, tuple):
+            expected = ", ".join(t.__name__ for t in types)
+        else:
+            expected = types.__name__
+
+        raise ValidationError(f"{name} must be an instance of {expected}")
+
+    return value
+
+
 def import_package(name: str):
     try:
         return importlib.import_module(name)

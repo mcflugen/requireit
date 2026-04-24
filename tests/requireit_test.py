@@ -14,6 +14,7 @@ from requireit import require_contains
 from requireit import require_dtype
 from requireit import require_greater_than
 from requireit import require_greater_than_or_equal
+from requireit import require_instance
 from requireit import require_length
 from requireit import require_length_at_least
 from requireit import require_length_at_most
@@ -42,6 +43,7 @@ from requireit import require_sorted
         pytest.param(partial(require_dtype, [0], "float"), id="dtype"),
         pytest.param(partial(require_greater_than, 0, 0), id=">"),
         pytest.param(partial(require_greater_than_or_equal, 0, 1), id=">="),
+        pytest.param(partial(require_instance, 0, float), id="instance"),
         pytest.param(partial(require_length, [1, 2, 3], 2), id="length-2"),
         pytest.param(
             partial(require_length_at_least, [1, 2, 3], 4), id="length_at_least-4"
@@ -91,6 +93,7 @@ def test_require_with_name(require):
         pytest.param(partial(require_dtype, dtype=float), [0.0], id="require_dtype"),
         pytest.param(partial(require_greater_than, lower=0.0), 1.0, id=">"),
         pytest.param(partial(require_greater_than_or_equal, lower=0), 0, id=">="),
+        pytest.param(partial(require_instance, types=int), 0, id="instance"),
         pytest.param(partial(require_length, length=2), (1, 2), id="length"),
         pytest.param(
             partial(require_length_at_least, length=1),
@@ -602,6 +605,13 @@ def test_require_dtype_not_ok(dtype, allow_cast):
 def test_require_dtype_concrete_type_with_allow_cast(dtype):
     with pytest.raises(TypeError, match="dtype must be a concrete dtype"):
         require_dtype([1.0, 2.0], dtype=dtype, allow_cast=True)
+
+
+def test_instance():
+    with pytest.raises(ValidationError, match="foo must be an instance of int, str"):
+        require_instance(1.0, (int, str), name="foo")
+    with pytest.raises(ValidationError, match="foo must be an instance of str"):
+        require_instance(1.0, (str,), name="foo")
 
 
 def test_raise_as():

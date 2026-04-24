@@ -3,17 +3,22 @@
 
 ## 0.8.1 (unreleased)
 
+### Features
+
+* Added `require_instance` to check that a value is a instance of a type.
+  [#42](https://github.com/mcflugen/requireit/issues/42)
+
 ## Fixes
 
 * Fixed CI test jobs so macOS runners use the Python version selected by
-  `actions/setup-python`.
+  `actions/setup-python`. [#43](https://github.com/mcflugen/requireit/issues/43)
 
 ## 0.8.0 (2026-04-14)
 
 ### Features
 
 * Added `raise_as` context manager to re-raise `ValidationError` as a
-  user-specified exception type.
+  user-specified exception type. [#40](https://github.com/mcflugen/requireit/issues/40)
 
 ## 0.7.0 (2026-04-12)
 
