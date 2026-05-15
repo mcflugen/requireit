@@ -316,7 +316,12 @@ def require_dtype(
             )
     else:
         if not np.issubdtype(array.dtype, dtype):
-            raise ValidationError(f"{name} must have dtype {concrete_dtype}")
+            expected = (
+                getattr(dtype, "__name__", dtype)
+                if concrete_dtype is None
+                else concrete_dtype
+            )
+            raise ValidationError(f"{name} must have dtype {expected}")
 
     return value
 

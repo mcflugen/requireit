@@ -1,6 +1,14 @@
 # Release Notes
 
 
+## 0.9.1 (unreleased)
+
+## Fixes
+
+* Fixed `require_dtype` error messages for NumPy dtype families such as `np.floating`.
+  [#45](https://github.com/mcflugen/requireit/issues/45)
+
+
 ## 0.9.0 (2026-04-23)
 
 ### Features

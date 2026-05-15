@@ -329,6 +329,13 @@ def test_require_dtype_mismatch_raises(array, dtype, name):
         require_array(np.asarray(array), dtype=dtype, name=name)
 
 
+def test_require_dtype_mismatch_message_does_not_contain_none():
+    with pytest.raises(ValidationError, match="must have dtype") as exc_info:
+        require_dtype(np.array([1, 2, 3]), np.floating)
+    assert "None" not in str(exc_info.value)
+    assert "floating" in str(exc_info.value)
+
+
 @pytest.mark.parametrize(
     "array,shape",
     [
