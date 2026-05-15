@@ -368,6 +368,56 @@ def require_shape(
     return value
 
 
+def require_like(
+    values: ArrayLike,
+    other: ArrayLike,
+    *,
+    shape: bool = True,
+    dtype: bool = True,
+    name: str | None = None,
+    other_name: str | None = None,
+) -> ArrayLike:
+    """Validate that an array has the same shape and/or dtype as another.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> a = np.ones((3, 4), dtype=np.float32)
+    >>> b = np.zeros((3, 4), dtype=np.float32)
+    >>> require_like(b, a)
+    array([[0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.]], dtype=float32)
+    >>> require_like(np.ones((2, 4)), a, other_name="a")
+    Traceback (most recent call last):
+    ...
+    requireit.ValidationError: array must have the same shape as a
+    """
+    name = name or "array"
+    other_name = other_name or "other"
+
+    array = np.asarray(values)
+    other_array = np.asarray(other)
+
+    if shape:
+        try:
+            require_shape(array, other_array.shape, name=name)
+        except ValidationError as err:
+            exc = ValidationError(f"{name} must have the same shape as {other_name}")
+            exc.add_note(str(err))
+            raise exc from err
+
+    if dtype:
+        try:
+            require_dtype(array, other_array.dtype, name=name, allow_cast=False)
+        except ValidationError as err:
+            exc = ValidationError(f"{name} must have the same dtype as {other_name}")
+            exc.add_note(str(err))
+            raise exc from err
+
+    return values
+
+
 def require_path_string(path: Any, *, name: str | None = None) -> str:
     """Validate that a value is a string intended to be used as a path.
 

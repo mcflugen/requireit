@@ -3,6 +3,11 @@
 
 ## 0.9.1 (unreleased)
 
+### Features
+
+* Added `require_like` to validate that an array matches another array's shape
+  and/or dtype. [#46](https://github.com/mcflugen/requireit/issues/46)
+
 ## Fixes
 
 * Fixed `require_dtype` error messages for NumPy dtype families such as `np.floating`.
