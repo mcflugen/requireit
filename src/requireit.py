@@ -344,6 +344,33 @@ def require_sorted(value: ArrayLike, *, strict=False, name: str | None = None):
     return value
 
 
+def require_ndim(values: ArrayLike, ndim: int, *, name: str | None = None) -> ArrayLike:
+    """Validate that an array has the required number of dimensions.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> require_ndim(np.ones((3, 4)), 2)
+    array([[1., 1., 1., 1.],
+           [1., 1., 1., 1.],
+           [1., 1., 1., 1.]])
+    >>> require_ndim(np.ones((3, 4)), 1)
+    Traceback (most recent call last):
+    ...
+    requireit.ValidationError: array must have 1 dimension
+    """
+    name = name or "array"
+
+    require_greater_than_or_equal(ndim, 0, name="ndim")
+
+    if np.asarray(values).ndim != ndim:
+        raise ValidationError(
+            f"{name} must have {ndim} dimension{'s' if ndim > 1 else ''}"
+        )
+
+    return values
+
+
 def require_shape(
     value: ArrayLike,
     shape: tuple[int | str | None, ...],
