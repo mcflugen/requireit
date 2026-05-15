@@ -21,6 +21,7 @@ from requireit import require_length_at_most
 from requireit import require_length_between
 from requireit import require_less_than
 from requireit import require_less_than_or_equal
+from requireit import require_like
 from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
@@ -45,6 +46,7 @@ from requireit import require_sorted
         pytest.param(partial(require_greater_than_or_equal, 0, 1), id=">="),
         pytest.param(partial(require_instance, 0, float), id="instance"),
         pytest.param(partial(require_length, [1, 2, 3], 2), id="length-2"),
+        pytest.param(partial(require_like, [1, 2, 3], 2), id="like"),
         pytest.param(
             partial(require_length_at_least, [1, 2, 3], 4), id="length_at_least-4"
         ),
@@ -95,6 +97,7 @@ def test_require_with_name(require):
         pytest.param(partial(require_greater_than_or_equal, lower=0), 0, id=">="),
         pytest.param(partial(require_instance, types=int), 0, id="instance"),
         pytest.param(partial(require_length, length=2), (1, 2), id="length"),
+        pytest.param(partial(require_like, other=[1, 2]), [0, 0], id="like"),
         pytest.param(
             partial(require_length_at_least, length=1),
             (1, 2),
@@ -438,6 +441,78 @@ def test_require_shape_with_wrong_dimensionality(shape):
 def test_require_shape_raises_for_invalid_shape(shape):
     with pytest.raises(TypeError):
         require_shape(np.ones((3, 2)), shape)
+
+
+def test_require_like_same_shape_ok():
+    a = np.zeros((3, 4), dtype=int)
+    b = np.zeros((3, 4), dtype=float)
+    assert require_like(b, a, shape=True, dtype=False) is b
+
+
+def test_require_like_same_dtype_ok():
+    a = np.ones((3, 4), dtype=np.float32)
+    b = np.zeros((2, 4), dtype=np.float32)
+    assert require_like(b, a, shape=False, dtype=True) is b
+
+
+def test_require_like_shape_and_dtype_ok():
+    a = np.ones((3, 4), dtype=np.float32)
+    b = np.zeros((3, 4), dtype=np.float32)
+    assert require_like(b, a, shape=True, dtype=True) is b
+
+
+def test_require_like_noop():
+    a = np.ones((2, 3), dtype=int)
+    b = np.zeros((3, 4), dtype=float)
+    assert require_like(b, a, shape=False, dtype=False) is b
+
+
+def test_require_like_shape_mismatch_raises():
+    a = np.ones((3, 4))
+    b = np.zeros((2, 4))
+    with pytest.raises(ValidationError, match="^array must have the same shape as"):
+        require_like(b, a, dtype=False)
+
+
+def test_require_like_dtype_mismatch_raises():
+    a = np.ones((3, 4), dtype=np.float32)
+    b = np.zeros((3, 4), dtype=np.float64)
+    with pytest.raises(ValidationError, match="^array must have the same dtype as"):
+        require_like(b, a, shape=False)
+
+
+@pytest.mark.parametrize("name", [None, "foo"])
+def test_require_like_error_message_uses_other_name(name):
+    name = "other" if name is None else name
+    with pytest.raises(
+        ValidationError,
+        match=f"^array must have the same shape as {name}",
+    ):
+        require_like([1, 2, 3], [1, 2], other_name=name)
+
+
+def test_require_like_dtype_not_checked_when_false():
+    a = np.ones((3, 4), dtype=np.float32)
+    b = np.zeros((3, 4), dtype=np.float64)
+    assert require_like(b, a, dtype=False) is b
+
+
+def test_require_like_shape_not_checked_when_false():
+    a = np.ones((3, 4))
+    b = np.zeros((2, 4))
+    assert require_like(b, a, shape=False) is b
+
+
+def test_require_like_note_contains_concrete_shape():
+    with pytest.raises(ValidationError) as exc_info:
+        require_like([1, 2], [1, 2, 3])
+    assert exc_info.value.__notes__ == ["array must have shape (3,)"]
+
+
+def test_require_like_note_contains_concrete_dtype():
+    with pytest.raises(ValidationError) as exc_info:
+        require_like([1, 2], np.array([1.0, 2.0], dtype=np.float64), dtype=True)
+    assert exc_info.value.__notes__ == ["array must have dtype float64"]
 
 
 @pytest.mark.parametrize(
