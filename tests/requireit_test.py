@@ -22,6 +22,7 @@ from requireit import require_length_between
 from requireit import require_less_than
 from requireit import require_less_than_or_equal
 from requireit import require_like
+from requireit import require_ndim
 from requireit import require_negative
 from requireit import require_nonnegative
 from requireit import require_nonpositive
@@ -59,6 +60,7 @@ from requireit import require_sorted
         pytest.param(
             partial(require_length_between, [1, 2, 3], 0, 2), id="length_between-long"
         ),
+        pytest.param(partial(require_ndim, [1, 2, 3], 2), id="ndim"),
         pytest.param(partial(require_negative, (0,)), id="negative-0"),
         pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
         pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
@@ -111,6 +113,7 @@ def test_require_with_name(require):
             (1, 2),
             id="length_between",
         ),
+        pytest.param(partial(require_ndim, ndim=1), (1, 2), id="ndim"),
         pytest.param(require_negative, -1.0, id="require_negative"),
         pytest.param(require_nonnegative, 0.0, id="require_nonnegative"),
         pytest.param(require_nonpositive, 0.0, id="require_nonpositive"),
@@ -513,6 +516,48 @@ def test_require_like_note_contains_concrete_dtype():
     with pytest.raises(ValidationError) as exc_info:
         require_like([1, 2], np.array([1.0, 2.0], dtype=np.float64), dtype=True)
     assert exc_info.value.__notes__ == ["array must have dtype float64"]
+
+
+@pytest.mark.parametrize(
+    "array,ndim",
+    [
+        (np.array(0), 0),
+        ([1, 2, 3], 1),
+        (np.ones((3, 4)), 2),
+        (np.ones((2, 3, 4)), 3),
+    ],
+)
+def test_require_ndim_ok(array, ndim):
+    actual = require_ndim(array, ndim)
+    assert actual is array
+
+
+@pytest.mark.parametrize(
+    "array,ndim",
+    [
+        ([1, 2, 3], 2),
+        (np.ones((3, 4)), 1),
+        (np.ones((3, 4)), 3),
+    ],
+)
+def test_require_ndim_mismatch_raises(array, ndim):
+    with pytest.raises(ValidationError, match=f"^array must have {ndim}"):
+        require_ndim(array, ndim)
+
+
+def test_require_ndim_singular():
+    with pytest.raises(ValidationError, match="must have 1 dimension$"):
+        require_ndim(np.ones((3, 4)), 1)
+
+
+def test_require_ndim_plural():
+    with pytest.raises(ValidationError, match="must have 2 dimensions$"):
+        require_ndim([1, 2, 3], 2)
+
+
+def test_require_ndim_with_negative_ndim():
+    with pytest.raises(ValidationError, match="^ndim must be >= 0"):
+        require_ndim([1, 2, 3], -1)
 
 
 @pytest.mark.parametrize(

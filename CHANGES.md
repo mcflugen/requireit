@@ -7,6 +7,9 @@
 
 * Added `require_like` to validate that an array matches another array's shape
   and/or dtype. [#46](https://github.com/mcflugen/requireit/issues/46)
+* - Added `require_ndim` to validate that an array has a required number of dimensions.
+  [#47](https://github.com/mcflugen/requireit/issues/47)
+
 
 ## Fixes
 
