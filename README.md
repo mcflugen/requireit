@@ -98,6 +98,27 @@ All validators:
 
 * `require_path_string`: Validate that a value is a string intended to be used as a path.
 
+### Command-line integration
+
+* `argparse_type`: Adapt a requireit validator for use as an argparse `type=` callable.
+
+```python
+import argparse
+from requireit import argparse_type, require_positive
+
+
+def parse_positive_int(value: str) -> int:
+    return require_positive(int(value))
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--count", type=argparse_type(parse_positive_int))
+```
+
+Converts `ValidationError` into `argparse.ArgumentTypeError`, allowing requireit
+validators to produce clean command-line error messages.
+
+
 ## Errors
 
 All validation failures raise:
@@ -107,6 +128,23 @@ requireit.ValidationError
 ```
 
 This allows callers to catch validation failures distinctly from other errors.
+To adapt validation errors to another exception type, use `raise_as`:
+
+```python
+from requireit import raise_as
+from requireit import require_positive
+
+with raise_as(ValueError):
+    require_positive(-1)
+```
+
+This raises:
+
+```python
+ValueError: value must be positive
+```
+Useful when integrating *requireit* into APIs that already expose a specific
+exception type.
 
 
 ## Contributing
