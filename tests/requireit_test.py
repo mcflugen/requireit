@@ -24,8 +24,10 @@ from requireit import require_less_than_or_equal
 from requireit import require_like
 from requireit import require_ndim
 from requireit import require_negative
+from requireit import require_none
 from requireit import require_nonnegative
 from requireit import require_nonpositive
+from requireit import require_not_none
 from requireit import require_not_one_of
 from requireit import require_one_of
 from requireit import require_path_string
@@ -51,8 +53,10 @@ CHECKS_THAT_FAIL = {
     "length_between-short": partial(require_length_between, [1, 2, 3], 4, 9),
     "ndim": partial(require_ndim, [1, 2, 3], 2),
     "negative-0": partial(require_negative, (0,)),
+    "none": partial(require_none, True),
     "nonnegative--1": partial(require_nonnegative, -1),
     "nonpositive-1": partial(require_nonpositive, 1),
+    "not_none": partial(require_not_none, None),
     "not_one_of-foo": partial(require_not_one_of, "foo", forbidden=("foo",)),
     "one_of-foo": partial(require_one_of, "foo", allowed=("bar",)),
     "positive-0": partial(require_positive, 0),
@@ -79,6 +83,8 @@ CHECKS_THAT_PASS = {
     "length_at_most": (partial(require_length_at_most, length=4), (1, 2)),
     "length_between": (partial(require_length_between, minimum=0, maximum=3), (1, 2)),
     "ndim": (partial(require_ndim, ndim=1), (1, 2)),
+    "none": (require_none, None),
+    "not_none": (require_not_none, False),
     "not_one_of": (partial(require_not_one_of, forbidden=()), "foo"),
     "require_negative": (require_negative, -1.0),
     "require_nonnegative": (require_nonnegative, 0.0),
@@ -718,3 +724,17 @@ def test_instance():
 def test_raise_as():
     with pytest.raises(ValueError, match="foobar!"), raise_as(ValueError):
         raise ValidationError("foobar!")
+
+
+def test_none():
+    value = None
+    assert require_none(value) is value
+    with pytest.raises(ValidationError, match="^value must not be None"):
+        require_not_none(value)
+
+
+@pytest.mark.parametrize("value", (True, False, 0, "", [1, 2], np.array([1, 2])))
+def test_not_none(value):
+    assert require_not_none(value) is value
+    with pytest.raises(ValidationError, match="^value must be None"):
+        require_none(value)

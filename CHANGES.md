@@ -9,6 +9,8 @@
   and/or dtype. [#46](https://github.com/mcflugen/requireit/issues/46)
 * - Added `require_ndim` to validate that an array has a required number of dimensions.
   [#47](https://github.com/mcflugen/requireit/issues/47)
+* Added `require_none` and `require_not_none` to validate that a value is,
+  or is not, `None`. [#50](https://github.com/mcflugen/requireit/issues/50)
 
 
 ## Fixes
