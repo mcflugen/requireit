@@ -33,100 +33,74 @@ from requireit import require_positive
 from requireit import require_shape
 from requireit import require_sorted
 
+CHECKS_THAT_FAIL = {
+    ">": partial(require_greater_than, 0, 0),
+    ">=": partial(require_greater_than_or_equal, 0, 1),
+    "<": partial(require_less_than, 0, 0),
+    "<=": partial(require_less_than_or_equal, 0, -1),
+    "between-above": partial(require_between, 2, 0, 1),
+    "between-below": partial(require_between, -1, 0, 1),
+    "contains": partial(require_contains, {"foo", "bar"}, required=("baz",)),
+    "dtype": partial(require_dtype, [0], "float"),
+    "instance": partial(require_instance, 0, float),
+    "length-2": partial(require_length, [1, 2, 3], 2),
+    "like": partial(require_like, [1, 2, 3], 2),
+    "length_at_least-4": partial(require_length_at_least, [1, 2, 3], 4),
+    "length_at_most-2": partial(require_length_at_most, [1, 2, 3], 2),
+    "length_between-long": partial(require_length_between, [1, 2, 3], 0, 2),
+    "length_between-short": partial(require_length_between, [1, 2, 3], 4, 9),
+    "ndim": partial(require_ndim, [1, 2, 3], 2),
+    "negative-0": partial(require_negative, (0,)),
+    "nonnegative--1": partial(require_nonnegative, -1),
+    "nonpositive-1": partial(require_nonpositive, 1),
+    "not_one_of-foo": partial(require_not_one_of, "foo", forbidden=("foo",)),
+    "one_of-foo": partial(require_one_of, "foo", allowed=("bar",)),
+    "positive-0": partial(require_positive, 0),
+    "path-empty": partial(require_path_string, ""),
+    "path-0": partial(require_path_string, 0),
+    "path-null": partial(require_path_string, "foo\x00bar"),
+    "sorted": partial(require_sorted, [0, 1, 0]),
+}
+
+
+CHECKS_THAT_PASS = {
+    ">": (partial(require_greater_than, lower=0.0), 1.0),
+    ">=": (partial(require_greater_than_or_equal, lower=0), 0),
+    "<": (partial(require_less_than, upper=1.0), 0.0),
+    "<=": (partial(require_less_than_or_equal, upper=1), 1),
+    "require_array": (require_array, np.asarray(0.0)),
+    "require_between": (partial(require_between, a_min=-1, a_max=1), (0.0,)),
+    "require_contains": (partial(require_contains, required={"bar"}), {"foo", "bar"}),
+    "require_dtype": (partial(require_dtype, dtype=float), [0.0]),
+    "instance": (partial(require_instance, types=int), 0),
+    "length": (partial(require_length, length=2), (1, 2)),
+    "like": (partial(require_like, other=[1, 2]), [0, 0]),
+    "length_at_least": (partial(require_length_at_least, length=1), (1, 2)),
+    "length_at_most": (partial(require_length_at_most, length=4), (1, 2)),
+    "length_between": (partial(require_length_between, minimum=0, maximum=3), (1, 2)),
+    "ndim": (partial(require_ndim, ndim=1), (1, 2)),
+    "not_one_of": (partial(require_not_one_of, forbidden=()), "foo"),
+    "require_negative": (require_negative, -1.0),
+    "require_nonnegative": (require_nonnegative, 0.0),
+    "require_nonpositive": (require_nonpositive, 0.0),
+    "require_one_of": (partial(require_one_of, allowed={"foo"}), "foo"),
+    "require_path_string": (require_path_string, "/foo"),
+    "require_positive": (require_positive, 1.0),
+    "sorted": (require_sorted, [0, 1, 2]),
+}
+
 
 @pytest.mark.parametrize(
-    "require",
-    (
-        pytest.param(partial(require_between, -1, 0, 1), id="between-below"),
-        pytest.param(partial(require_between, 2, 0, 1), id="between-above"),
-        pytest.param(
-            partial(require_contains, {"foo", "bar"}, required=("baz",)), id="contains"
-        ),
-        pytest.param(partial(require_dtype, [0], "float"), id="dtype"),
-        pytest.param(partial(require_greater_than, 0, 0), id=">"),
-        pytest.param(partial(require_greater_than_or_equal, 0, 1), id=">="),
-        pytest.param(partial(require_instance, 0, float), id="instance"),
-        pytest.param(partial(require_length, [1, 2, 3], 2), id="length-2"),
-        pytest.param(partial(require_like, [1, 2, 3], 2), id="like"),
-        pytest.param(
-            partial(require_length_at_least, [1, 2, 3], 4), id="length_at_least-4"
-        ),
-        pytest.param(
-            partial(require_length_at_most, [1, 2, 3], 2), id="length_at_most-2"
-        ),
-        pytest.param(
-            partial(require_length_between, [1, 2, 3], 4, 9), id="length_between-short"
-        ),
-        pytest.param(
-            partial(require_length_between, [1, 2, 3], 0, 2), id="length_between-long"
-        ),
-        pytest.param(partial(require_ndim, [1, 2, 3], 2), id="ndim"),
-        pytest.param(partial(require_negative, (0,)), id="negative-0"),
-        pytest.param(partial(require_nonnegative, -1), id="nonnegative--1"),
-        pytest.param(partial(require_nonpositive, 1), id="nonpositive-1"),
-        pytest.param(
-            partial(require_not_one_of, "foo", forbidden=("foo",)), id="not_one_of-foo"
-        ),
-        pytest.param(partial(require_one_of, "foo", allowed=("bar",)), id="one_of-foo"),
-        pytest.param(partial(require_positive, 0), id="positive-0"),
-        pytest.param(partial(require_path_string, ""), id="path-empty"),
-        pytest.param(partial(require_path_string, 0), id="path-0"),
-        pytest.param(partial(require_path_string, "foo\x00bar"), id="path-null"),
-        pytest.param(partial(require_less_than, 0, 0), id="<"),
-        pytest.param(partial(require_less_than_or_equal, 0, -1), id="<="),
-        pytest.param(partial(require_sorted, [0, 1, 0]), id="sorted"),
-    ),
+    "require", [pytest.param(f, id=id_) for id_, f in CHECKS_THAT_FAIL.items()]
 )
 def test_require_with_name(require):
-    with pytest.raises(ValidationError, match="^foobar"):
+    with pytest.raises(ValidationError, match="^foobar must"):
         require(name="foobar")
 
 
 @pytest.mark.parametrize(
-    "require,value",
-    (
-        pytest.param(require_array, np.asarray(0.0), id="require_array"),
-        pytest.param(
-            partial(require_between, a_min=-1, a_max=1), (0.0,), id="require_between"
-        ),
-        pytest.param(
-            partial(require_contains, required={"bar"}),
-            {"foo", "bar"},
-            id="require_contains",
-        ),
-        pytest.param(partial(require_dtype, dtype=float), [0.0], id="require_dtype"),
-        pytest.param(partial(require_greater_than, lower=0.0), 1.0, id=">"),
-        pytest.param(partial(require_greater_than_or_equal, lower=0), 0, id=">="),
-        pytest.param(partial(require_instance, types=int), 0, id="instance"),
-        pytest.param(partial(require_length, length=2), (1, 2), id="length"),
-        pytest.param(partial(require_like, other=[1, 2]), [0, 0], id="like"),
-        pytest.param(
-            partial(require_length_at_least, length=1),
-            (1, 2),
-            id="length_at_least",
-        ),
-        pytest.param(
-            partial(require_length_at_most, length=4), (1, 2), id="length_at_most"
-        ),
-        pytest.param(
-            partial(require_length_between, minimum=0, maximum=3),
-            (1, 2),
-            id="length_between",
-        ),
-        pytest.param(partial(require_ndim, ndim=1), (1, 2), id="ndim"),
-        pytest.param(require_negative, -1.0, id="require_negative"),
-        pytest.param(require_nonnegative, 0.0, id="require_nonnegative"),
-        pytest.param(require_nonpositive, 0.0, id="require_nonpositive"),
-        pytest.param(partial(require_not_one_of, forbidden=()), "foo", id="not_one_of"),
-        pytest.param(
-            partial(require_one_of, allowed={"foo"}), "foo", id="require_one_of"
-        ),
-        pytest.param(require_positive, 1.0, id="require_positive"),
-        pytest.param(require_path_string, "/foo", id="require_path_string"),
-        pytest.param(partial(require_less_than, upper=1.0), 0.0, id="<"),
-        pytest.param(partial(require_less_than_or_equal, upper=1), 1, id="<="),
-        pytest.param(require_sorted, [0, 1, 2], id="sorted"),
-    ),
+    "require, value",
+    [pytest.param(f, value, id=id_) for id_, (f, value) in CHECKS_THAT_PASS.items()],
 )
 def test_require_returns_input(require, value):
     actual = require(value)

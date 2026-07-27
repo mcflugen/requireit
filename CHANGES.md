@@ -16,6 +16,12 @@
 * Fixed `require_dtype` error messages for NumPy dtype families such as `np.floating`.
   [#45](https://github.com/mcflugen/requireit/issues/45)
 
+### Tests
+
+* Cleaned up the parametrized `require` tests by collecting the failing and
+  passing cases into named `CHECKS_THAT_FAIL`/`CHECKS_THAT_PASS` dicts.
+  [#49](https://github.com/mcflugen/requireit/issues/49)
+
 
 ## 0.9.0 (2026-04-23)
 
