@@ -12,6 +12,11 @@
 * Added `require_none` and `require_not_none` to validate that a value is,
   or is not, `None`. [#50](https://github.com/mcflugen/requireit/issues/50)
 
+### Changes
+
+* Dropped support for Python 3.11.
+  [#52](https://github.com/mcflugen/requireit/issues/52)
+
 
 ## Fixes
 
