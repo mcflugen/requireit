@@ -127,6 +127,26 @@ def require_contains(
     return collection
 
 
+def require_none(value, *, name: str | None = None) -> None:
+    """Validate that a value is None."""
+    name = name or "value"
+
+    if value is not None:
+        raise ValidationError(f"{name} must be None")
+
+    return value
+
+
+def require_not_none[T](value: T | None, *, name: str | None = None) -> T:
+    """Validate that a value is not None."""
+    name = name or "value"
+
+    if value is None:
+        raise ValidationError(f"{name} must not be None")
+
+    return value
+
+
 def require_between(
     value: ArrayLike,
     a_min: float | None = None,
