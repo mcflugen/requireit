@@ -1,13 +1,13 @@
 # Release Notes
 
 
-## 0.9.1 (unreleased)
+## 0.10.0 (2026-07-28)
 
 ### Features
 
 * Added `require_like` to validate that an array matches another array's shape
   and/or dtype. [#46](https://github.com/mcflugen/requireit/issues/46)
-* - Added `require_ndim` to validate that an array has a required number of dimensions.
+* Added `require_ndim` to validate that an array has a required number of dimensions.
   [#47](https://github.com/mcflugen/requireit/issues/47)
 * Added `require_none` and `require_not_none` to validate that a value is,
   or is not, `None`. [#50](https://github.com/mcflugen/requireit/issues/50)
