@@ -72,6 +72,8 @@ All validators:
 
 * `require_contains`: Require `collection` contains required values.
 + `require_instance`: Require `value` is an instance of one or more types.
+* `require_none`: Require `value` is `None`.
+* `require_not_none`: Require `value` is not `None`.
 * `require_not_one_of`: Require `value` is not contained in `forbidden`
 * `require_one_of`: Require `value` is contained in `allowed`
 
