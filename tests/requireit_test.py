@@ -6,6 +6,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from requireit import ValidationError
+from requireit import add_note
 from requireit import import_package
 from requireit import raise_as
 from requireit import require_array
@@ -724,6 +725,30 @@ def test_instance():
 def test_raise_as():
     with pytest.raises(ValueError, match="foobar!"), raise_as(ValueError):
         raise ValidationError("foobar!")
+
+
+def test_raise_as_with_note():
+    with (
+        pytest.raises(ValueError, match="foobar!") as exc_info,
+        raise_as(ValueError, note="extra context"),
+    ):
+        raise ValidationError("foobar!")
+    assert exc_info.value.__notes__ == ["extra context"]
+
+
+def test_raise_as_without_note_has_no_notes():
+    with pytest.raises(ValueError) as exc_info, raise_as(ValueError):
+        raise ValidationError("foobar!")
+    assert not getattr(exc_info.value, "__notes__", [])
+
+
+def test_add_note():
+    with (
+        pytest.raises(ValidationError, match="foobar!") as exc_info,
+        add_note("extra context"),
+    ):
+        raise ValidationError("foobar!")
+    assert exc_info.value.__notes__ == ["extra context"]
 
 
 def test_none():
