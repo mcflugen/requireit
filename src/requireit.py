@@ -31,12 +31,24 @@ class ValidationError(RequireItError):
 
 
 @contextlib.contextmanager
-def raise_as(error_type: type[Exception]) -> Iterator[None]:
+def raise_as(error_type: type[Exception], *, note: str | None = None) -> Iterator[None]:
     """Raise ``ValidationError`` as another exception type."""
     try:
         yield
     except ValidationError as exc:
-        raise error_type(str(exc)) from exc
+        new_exc = error_type(str(exc))
+        if note is not None:
+            new_exc.add_note(note)
+        raise new_exc from exc
+
+
+@contextlib.contextmanager
+def add_note(note: str) -> Iterator[None]:
+    try:
+        yield
+    except RequireItError as exc:
+        exc.add_note(note)
+        raise
 
 
 def argparse_type(validator: Callable) -> Callable:

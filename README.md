@@ -146,6 +146,25 @@ ValueError: value must be positive
 Useful when integrating *requireit* into APIs that already expose a specific
 exception type.
 
+`raise_as` also accepts an optional `note`, attached to the raised exception
+via [`add_note`](https://docs.python.org/3/library/exceptions.html#BaseException.add_note):
+
+```python
+with raise_as(ValueError, note="while parsing config.toml"):
+    require_positive(-1)
+```
+
+To attach a note without changing the exception type, use `add_note` directly:
+
+```python
+from requireit import add_note
+
+with add_note("while parsing config.toml"):
+    require_positive(-1)
+```
+
+This still raises `ValidationError`, with the note included in the traceback.
+
 
 ## Contributing
 

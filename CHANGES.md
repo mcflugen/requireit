@@ -11,6 +11,10 @@
   [#47](https://github.com/mcflugen/requireit/issues/47)
 * Added `require_none` and `require_not_none` to validate that a value is,
   or is not, `None`. [#50](https://github.com/mcflugen/requireit/issues/50)
+* Added `add_note` context manager to attach a note to a `RequireItError`
+  raised within its block, and a `note` keyword to `raise_as` to do the same
+  when converting a `ValidationError` to another exception type.
+  [#51](https://github.com/mcflugen/requireit/issues/51)
 
 ### Changes
 
