@@ -232,6 +232,25 @@ def test_require_between_is_invalid(value, kwds):
         require_between(value, **kwds)
 
 
+@pytest.mark.parametrize(
+    "func",
+    (
+        require_between,
+        partial(require_greater_than, lower=0.0),
+        partial(require_greater_than_or_equal, lower=0.0),
+        partial(require_less_than, upper=0.0),
+        partial(require_less_than_or_equal, upper=0.0),
+        require_negative,
+        require_nonnegative,
+        require_nonpositive,
+        require_positive,
+    ),
+)
+def test_nan_is_invalid(func):
+    with pytest.raises(ValidationError, match="^value must not be nan"):
+        func(np.nan)
+
+
 @pytest.mark.parametrize("value,ok", ((-1.0, True), (0.0, False), (1.0, False)))
 def test_require_negative(value, ok):
     if ok:
