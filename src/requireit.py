@@ -210,6 +210,9 @@ def require_between(
 
     arr = np.asarray(value)
 
+    if np.any(np.isnan(value)):
+        raise ValidationError(f"{name} must not be nan")
+
     if a_min is not None:
         cmp: Callable = np.less if inclusive_min else np.less_equal
         op = ">=" if inclusive_min else ">"

@@ -1,6 +1,18 @@
 # Release Notes
 
 
+## 0.10.1 (unreleased)
+
+## Fixes
+
+* `require_between`, and the validators built on it (`require_positive`,
+  `require_negative`, `require_nonnegative`, `require_nonpositive`,
+  `require_greater_than`, `require_greater_than_or_equal`, `require_less_than`,
+  and `require_less_than_or_equal`), now reject `nan` rather than silently
+  treating it as satisfying the bound.
+  [#56](https://github.com/mcflugen/requireit/issues/56)
+
+
 ## 0.10.0 (2026-07-28)
 
 ### Features
