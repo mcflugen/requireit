@@ -1,7 +1,7 @@
 # Release Notes
 
 
-## 0.10.1 (unreleased)
+## 0.10.1 (2026-08-13)
 
 ## Fixes
 
