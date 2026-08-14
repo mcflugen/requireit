@@ -123,7 +123,8 @@ validators to produce clean command-line error messages.
 
 ## Errors
 
-All validation failures raise:
+All validation failures raise `ValidationError`, which inherits from both
+`RequireItError` and the standard `ValueError`:
 
 ```python
 requireit.ValidationError

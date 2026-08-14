@@ -1,5 +1,17 @@
 # Release Notes
 
+## 0.10.2 (unreleased)
+
+### Changes
+
+* `ValidationError` now also inherits from the standard `ValueError`, allowing
+  callers to handle requireit validation failures with other invalid values.
+  [#58](https://github.com/mcflugen/requireit/issues/58)
+* `require_length`, `require_length_at_least`, `require_length_at_most`, and
+  `require_length_between` now raise `TypeError` when passed a value that does
+  not have a length.
+  [#58](https://github.com/mcflugen/requireit/issues/58)
+
 
 ## 0.10.1 (2026-08-13)
 
