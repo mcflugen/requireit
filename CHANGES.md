@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.10.2 (unreleased)
+## 0.11.0 (2026-08-14)
 
 ### Changes
 
