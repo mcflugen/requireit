@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
+from requireit import RequireItError
 from requireit import ValidationError
 from requireit import add_note
 from requireit import import_package
@@ -632,12 +633,19 @@ def test_require_length_not_ok(value):
         require_length_between(value, minimum=0, maximum=2)
 
 
+@pytest.mark.parametrize(
+    "func",
+    (
+        partial(require_length, 2),
+        partial(require_length_at_least, 2),
+        partial(require_length_at_most, 2),
+        partial(require_length_between, 0, 10),
+    ),
+)
 @pytest.mark.parametrize("value", (0, True, 3.14, 1 + 2j, None))
-def test_require_length_without_len(value):
-    with pytest.raises(ValidationError, match="value must have a length"):
-        require_length(value, 2)
-    with pytest.raises(ValidationError, match="value must have a length"):
-        require_length_between(value, 0, 10)
+def test_require_length_without_len(func, value):
+    with pytest.raises(TypeError, match="value must have a length"):
+        func(value)
 
 
 @pytest.mark.parametrize("value", ({"foo", "bar"}, ("foo", "bar")))
@@ -744,6 +752,11 @@ def test_instance():
 def test_raise_as():
     with pytest.raises(ValueError, match="foobar!"), raise_as(ValueError):
         raise ValidationError("foobar!")
+
+
+@pytest.mark.parametrize("error", (RequireItError, ValueError))
+def test_validation_error_inherits_from(error):
+    assert isinstance(ValidationError("foobar"), error)
 
 
 def test_raise_as_with_note():

@@ -23,10 +23,10 @@ except PackageNotFoundError:  # pragma: no cover
 
 
 class RequireItError(Exception):
-    """Base class for exceptions raised from this module."""
+    """Base class for exceptions raised by requireit."""
 
 
-class ValidationError(RequireItError):
+class ValidationError(RequireItError, ValueError):
     """Error to indicate that a validation has failed."""
 
 
@@ -551,12 +551,12 @@ def require_less_than_or_equal(
     return require_between(value, a_max=upper, inclusive_max=True, name=name)
 
 
-def _length_of(value, *, name: str | None):
+def _length_of(value: Sized, *, name: str | None):
     name = name or "value"
     try:
         return len(value)
-    except TypeError as err:
-        raise ValidationError(f"{name} must have a length") from err
+    except TypeError:
+        raise TypeError(f"{name} must have a length") from None
 
 
 def require_length_between(
@@ -593,7 +593,7 @@ def require_length_between(
     Raises
     ------
     ValidationError
-        If the object does not have the required length or has no length.
+        If the object does not have the required length.
     """
     name = name or "value"
 
@@ -614,7 +614,7 @@ def require_length_between(
     return value
 
 
-def require_length(value: Any, length: int, *, name: str | None = None):
+def require_length(value: Sized, length: int, *, name: str | None = None):
     """Require `len(value) == length`"""
     name = name or "value"
 
@@ -623,14 +623,14 @@ def require_length(value: Any, length: int, *, name: str | None = None):
     return value
 
 
-def require_length_at_least(value: Any, length: int, *, name: str | None = None):
+def require_length_at_least(value: Sized, length: int, *, name: str | None = None):
     """Require `len(value) >= length`"""
     return require_length_between(
         value, minimum=length, maximum=None, inclusive_min=True, name=name
     )
 
 
-def require_length_at_most(value: Any, length: int, *, name: str | None = None):
+def require_length_at_most(value: Sized, length: int, *, name: str | None = None):
     """Require `len(value) <= length`"""
     return require_length_between(
         value, minimum=None, maximum=length, inclusive_max=True, name=name
