@@ -33,9 +33,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 requires-python = ">=3.12"
-dependencies = [
-  "numpy>=2.3",
-]
+dependencies = []
 dynamic = ["readme"]
 
 [project.urls]
@@ -46,6 +44,9 @@ changelog = "https://github.com/mcflugen/requireit/blob/main/CHANGES.md"
 
 [project.optional-dependencies]
 dev = ["nox"]
+numpy = [
+  "numpy>=2.3",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
