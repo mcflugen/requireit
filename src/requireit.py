@@ -116,22 +116,70 @@ def require_not_one_of[T: Hashable](
     return value
 
 
-def require_contains(
-    collection: Collection[Any],
+def require_members(
+    collection: Collection[Hashable],
     *,
-    required: Collection[Any] | None = None,
+    required: Collection[Hashable] | None = None,
+    allowed: Collection[Hashable] | None = None,
+    forbidden: Collection[Hashable] | None = None,
     name: str | None = None,
 ):
-    """Require `collection` contains required values."""
+    """Require `collection` contains/does not contain members."""
+    collection_members = set(collection)
+
     name = name or "collection"
 
-    missing = set(required) - set(collection) if required is not None else set()
+    missing = (set(required) - collection_members) if required is not None else set()
+    unexpected = set()
+    if allowed is not None:
+        unexpected = collection_members - set(allowed)
+    if forbidden is not None:
+        unexpected |= collection_members & set(forbidden)
 
+    errors = []
     if missing:
-        missing_values = ", ".join(sorted(missing))
-        raise ValidationError(f"{name} must contain {missing_values}")
+        errors.append(f"must contain {', '.join(sorted(map(repr, missing)))}")
+    if unexpected:
+        errors.append(f"must not contain {', '.join(sorted(map(repr, unexpected)))}")
+    if errors:
+        raise ValidationError(f"{name} " + "; ".join(errors))
 
     return collection
+
+
+def require_contains(
+    collection: Collection[Hashable],
+    *,
+    required: Collection[Hashable] | None = None,
+    name: str | None = None,
+):
+    """Require `collection` contains required values, ignoring duplicates."""
+    return require_members(collection, required=required, name=name)
+
+
+def require_does_not_contain(
+    collection: Collection[Hashable],
+    *,
+    forbidden: Collection[Hashable],
+    name: str | None = None,
+):
+    """Require `collection` does not contain forbidden values."""
+    return require_members(collection, forbidden=forbidden, name=name)
+
+
+def require_contains_exactly(
+    collection: Collection[Hashable],
+    *,
+    expected: Collection[Hashable] | None = None,
+    name: str | None = None,
+):
+    """Require exactly the expected members, ignoring order and duplicates."""
+    return require_members(
+        collection,
+        required=expected,
+        allowed=expected if expected is not None else set(),
+        name=name,
+    )
 
 
 def require_none(value, *, name: str | None = None) -> None:
@@ -723,10 +771,6 @@ def require_instance[T](
     return value
 
 
-def _import_numpy():
-    return import_package("numpy", hint="Install with 'pip install requireit[numpy]'")
-
-
 def import_package(name: str, hint: str | None = None):
     hints = [] if hint is None else [hint]
     try:
@@ -735,3 +779,7 @@ def import_package(name: str, hint: str | None = None):
         raise ValidationError(
             ". ".join([f"{name} must be installed"] + hints)
         ) from None
+
+
+def _import_numpy():
+    return import_package("numpy", hint="Install with 'pip install requireit[numpy]'")

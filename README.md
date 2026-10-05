@@ -80,7 +80,10 @@ All validators:
 ### General
 
 * `require_contains`: Require `collection` contains required values.
-+ `require_instance`: Require `value` is an instance of one or more types.
+* `require_contains_exactly`: Require `collection` contains exactly the expected members.
+* `require_does_not_contain`: Require `collection` contains no forbidden members.
+* `require_instance`: Require `value` is an instance of one or more types.
+* `require_members`: Require `collection` contains/does not contain members.
 * `require_none`: Require `value` is `None`.
 * `require_not_none`: Require `value` is not `None`.
 * `require_not_one_of`: Require `value` is not contained in `forbidden`
