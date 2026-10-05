@@ -123,17 +123,13 @@ def test_require_returns_input(require, value):
         ("foo", ("foo", "bar", "baz")),
         ("", ("", 0, True)),
         ("b", "foobar"),
-        (0, ([1], [2], 0)),
-        ([1], ([1], [2])),
+        ((1,), ((1,), (2,))),
+        (frozenset({1}), (frozenset({1}), frozenset({2}))),
     ),
 )
-@pytest.mark.parametrize("allowed_type", (list, tuple, set))
+@pytest.mark.parametrize("allowed_type", (list, tuple, set, iter))
 def test_require_one_of_ok(value, allowed, allowed_type):
-    try:
-        allowed_type(allowed)
-    except TypeError:
-        pytest.skip("allowed contains unhashable items")
-    assert require_one_of(value, allowed=allowed_type(allowed)) == value
+    assert require_one_of(value, allowed=allowed_type(allowed)) is value
 
 
 @pytest.mark.parametrize(
@@ -144,17 +140,13 @@ def test_require_one_of_ok(value, allowed, allowed_type):
         ("foo", ("foobar", "bar", "baz")),
         ("", (0, True)),
         ("b", "foo"),
-        (0, ([0], [1], 1)),
-        ([1], ([0], [2])),
+        ((1,), ((0,), (2,))),
+        (frozenset({1}), (frozenset({0}), frozenset({2}))),
     ),
 )
-@pytest.mark.parametrize("forbidden_type", (list, tuple, set))
+@pytest.mark.parametrize("forbidden_type", (list, tuple, set, iter))
 def test_require_not_one_of_ok(value, forbidden, forbidden_type):
-    try:
-        forbidden_type(forbidden)
-    except TypeError:
-        pytest.skip("forbidden contains unhashable items")
-    assert require_not_one_of(value, forbidden=forbidden_type(forbidden)) == value
+    assert require_not_one_of(value, forbidden=forbidden_type(forbidden)) is value
 
 
 @pytest.mark.parametrize(
@@ -165,16 +157,11 @@ def test_require_not_one_of_ok(value, forbidden, forbidden_type):
         ("fu", ("foo", "bar", "baz")),
         (1, ()),
         ("bar", "foobar"),
-        (0, ([0],)),
-        ([0], (0, 1)),
+        ((0,), ((1,), (2,))),
     ),
 )
-@pytest.mark.parametrize("allowed_type", (list, tuple, set))
+@pytest.mark.parametrize("allowed_type", (list, tuple, set, iter))
 def test_require_one_of_not_ok(value, allowed, allowed_type):
-    try:
-        allowed_type(allowed)
-    except TypeError:
-        pytest.skip("allowed contains unhashable items")
     with pytest.raises(ValidationError, match="^value must be one of"):
         require_one_of(value, allowed=allowed_type(allowed))
 
@@ -186,18 +173,39 @@ def test_require_one_of_not_ok(value, allowed, allowed_type):
         (0, (1, 0)),
         ("foo", ("foo", "bar", "baz")),
         ("b", "foobar"),
-        (0, ([0], 0)),
-        ([0], (0, 1, [0])),
+        ((0,), ((0,), (1,))),
     ),
 )
-@pytest.mark.parametrize("forbidden_type", (list, tuple, set))
+@pytest.mark.parametrize("forbidden_type", (list, tuple, set, iter))
 def test_require_not_one_of_not_ok(value, forbidden, forbidden_type):
-    try:
-        forbidden_type(forbidden)
-    except TypeError:
-        pytest.skip("forbidden contains unhashable items")
     with pytest.raises(ValidationError, match="^value must not be one of"):
         require_not_one_of(value, forbidden=forbidden_type(forbidden))
+
+
+@pytest.mark.parametrize(
+    "validator, keyword",
+    ((require_one_of, "allowed"), (require_not_one_of, "forbidden")),
+)
+@pytest.mark.parametrize("value", ([1], {"a": 1}, {1}, ([1],)))
+@pytest.mark.parametrize("choices", ((), (0, frozenset({1}))))
+def test_membership_rejects_unhashable_value(validator, keyword, value, choices):
+    with pytest.raises(TypeError, match="unhashable type"):
+        validator(value, **{keyword: choices})
+
+
+@pytest.mark.parametrize(
+    "validator, keyword",
+    ((require_one_of, "allowed"), (require_not_one_of, "forbidden")),
+)
+@pytest.mark.parametrize("item", ([1], {"a": 1}, {1}, ([1],)))
+@pytest.mark.parametrize("choices_type", (list, tuple, iter))
+@pytest.mark.parametrize("value", (0, 2))
+def test_membership_rejects_unhashable_item(
+    validator, keyword, item, choices_type, value
+):
+    choices = choices_type((0, item, 1))
+    with pytest.raises(TypeError, match="unhashable type"):
+        validator(value, **{keyword: choices})
 
 
 @pytest.mark.parametrize("value", (1.0, (-1, 1), np.asarray([-1, 1])))

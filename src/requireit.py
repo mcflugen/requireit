@@ -4,6 +4,7 @@ import contextlib
 import importlib
 from collections.abc import Callable
 from collections.abc import Collection
+from collections.abc import Hashable
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Sized
@@ -85,39 +86,31 @@ def argparse_type(validator: Callable) -> Callable:
     return _type
 
 
-def require_one_of(
-    value: Any, *, allowed: Iterable[Any], name: str | None = None
-) -> Any:
-    """Require `value` is contained in `allowed`"""
+def require_one_of[T: Hashable](
+    value: T, *, allowed: Iterable[Hashable], name: str | None = None
+) -> T:
+    """Require `value` is contained in `allowed`."""
     name = name or "value"
 
-    try:
-        collection_of_allowed: Collection = set(allowed)
-        in_collection = value in collection_of_allowed
-    except TypeError:
-        collection_of_allowed = list(allowed)
-        in_collection = value in collection_of_allowed
+    hash(value)
+    collection_of_allowed = set(allowed)
 
-    if not in_collection:
+    if value not in collection_of_allowed:
         allowed_str = ", ".join(sorted(repr(x) for x in collection_of_allowed))
         raise ValidationError(f"{name} must be one of {allowed_str}")
     return value
 
 
-def require_not_one_of(
-    value: Any, *, forbidden: Iterable[Any], name: str | None = None
-) -> Any:
-    """Require `value` is not contained in `forbidden`"""
+def require_not_one_of[T: Hashable](
+    value: T, *, forbidden: Iterable[Hashable], name: str | None = None
+) -> T:
+    """Require `value` is not contained in `forbidden`."""
     name = name or "value"
 
-    try:
-        collection_of_forbidden: Collection = set(forbidden)
-        in_collection = value in collection_of_forbidden
-    except TypeError:
-        collection_of_forbidden = list(forbidden)
-        in_collection = value in collection_of_forbidden
+    hash(value)
+    collection_of_forbidden = set(forbidden)
 
-    if in_collection:
+    if value in collection_of_forbidden:
         forbidden_str = ", ".join(sorted(repr(x) for x in collection_of_forbidden))
         raise ValidationError(f"{name} must not be one of {forbidden_str}")
     return value
