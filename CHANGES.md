@@ -1,6 +1,6 @@
 # Release Notes
 
-## Unreleased
+## 0.12.0 (2026-10-05)
 
 ### Features
 
@@ -16,7 +16,7 @@
   `TypeError`. [#64](https://github.com/mcflugen/requireit/issues/64)
 * NumPy is now optional. Numeric validators support Python real scalars without
   NumPy, and array validation loads NumPy only when needed. Install
-  `requireit[numpy]` to use array-like inputs, or array validators.
+  `requireit[numpy]` to use array-like inputs or array validators.
   [#62](https://github.com/mcflugen/requireit/issues/62)
 
 ### Fixes
@@ -41,7 +41,7 @@
 
 ## 0.10.1 (2026-08-13)
 
-## Fixes
+### Fixes
 
 * `require_between`, and the validators built on it (`require_positive`,
   `require_negative`, `require_nonnegative`, `require_nonpositive`,
@@ -72,7 +72,7 @@
   [#52](https://github.com/mcflugen/requireit/issues/52)
 
 
-## Fixes
+### Fixes
 
 * Fixed `require_dtype` error messages for NumPy dtype families such as `np.floating`.
   [#45](https://github.com/mcflugen/requireit/issues/45)
@@ -91,7 +91,7 @@
 * Added `require_instance` to check that a value is an instance of a type.
   [#42](https://github.com/mcflugen/requireit/issues/42)
 
-## Fixes
+### Fixes
 
 * Fixed CI test jobs so macOS runners use the Python version selected by
   `actions/setup-python`. [#43](https://github.com/mcflugen/requireit/issues/43)
