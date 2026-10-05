@@ -6,7 +6,8 @@
 `require_positive`, `require_between`, and `require_array` for validating values
 and arrays at runtime.
 
-It is intentionally minimal and dependency-light (*numpy* only).
+It is intentionally minimal, with no required dependencies. NumPy is optional
+for array validation.
 
 ## Why `requireit`?
 
@@ -51,6 +52,14 @@ aggregation, you probably want something heavier.
 pip install requireit
 ```
 
+Numeric checks work with Python real scalars (including integers and floats)
+without NumPy. For array-like inputs and array validators, install the NumPy
+extra:
+
+```bash
+pip install 'requireit[numpy]'
+```
+
 ## API Summary
 
 All validators:
@@ -85,6 +94,14 @@ All validators:
 * `require_length_between`: Require `len(value)` falls within a specified range.
 
 ### Numeric
+
+Numeric validators accept real scalar values or, with NumPy installed, array-like
+values. For arrays, every element must satisfy the check. Bounds must be real
+scalars, including NumPy integer and floating scalars; array-valued bounds are
+not supported. In `require_between`, `None` means that a bound is omitted.
+
+NaN input values raise `ValidationError`. NaN or non-real-scalar bounds raise
+`ValueError`.
 
 * `require_between`: Validate that a value lies within a specified interval.
 * `require_greater_than`: Require `value > lower`

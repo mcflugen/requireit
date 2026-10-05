@@ -1,5 +1,21 @@
 # Release Notes
 
+## Unreleased
+
+### Changes
+
+* NumPy is now optional. Numeric validators support Python real scalars without
+  NumPy, and array validation loads NumPy only when needed. Install
+  `requireit[numpy]` to use array-like inputs, or array validators.
+  [#62](https://github.com/mcflugen/requireit/issues/62)
+
+### Fixes
+
+* `require_between` and the numeric validators built on it now reject NaN bounds
+  with `ValueError` for both scalar and array inputs.
+  [#62](https://github.com/mcflugen/requireit/issues/62)
+
+
 ## 0.11.0 (2026-08-14)
 
 ### Changes

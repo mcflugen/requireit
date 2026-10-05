@@ -233,6 +233,13 @@ def test_require_between_is_invalid(value, kwds):
         require_between(value, **kwds)
 
 
+def test_scalar_with_array_bounds():
+    with pytest.raises(ValueError, match="^a_min must be a real scalar"):
+        require_between((0.0, 0.0), a_min=(-1.0, -1.0))
+    with pytest.raises(ValueError, match="^a_max must be a real scalar"):
+        require_between((0.0, 0.0), a_max=(1.0, 1.0))
+
+
 @pytest.mark.parametrize(
     "func",
     (
@@ -247,9 +254,18 @@ def test_require_between_is_invalid(value, kwds):
         require_positive,
     ),
 )
-def test_nan_is_invalid(func):
+@pytest.mark.parametrize("value", (np.nan, (0.0, np.nan)))
+def test_nan_is_invalid(func, value):
     with pytest.raises(ValidationError, match="^value must not be nan"):
-        func(np.nan)
+        func(value)
+
+
+@pytest.mark.parametrize("value", (0.0, (0.0, 1.0)))
+def test_nan_in_invalid_bound(value):
+    with pytest.raises(ValueError, match="^a_min must not be nan"):
+        require_between(value, a_min=np.nan)
+    with pytest.raises(ValueError, match="^a_max must not be nan"):
+        require_between(value, a_max=np.nan)
 
 
 @pytest.mark.parametrize("value,ok", ((-1.0, True), (0.0, False), (1.0, False)))
@@ -597,7 +613,7 @@ def test_require_less_than(value):
     "value", (0.0, np.asarray(0.0), np.asarray([0.0, -1.0]), np.asarray([[0.0]]))
 )
 def test_require_less_than_or_equal(value):
-    actual = require_less_than_or_equal(value, upper=value)
+    actual = require_less_than_or_equal(value, upper=0.0)
     assert actual is value
 
     with pytest.raises(ValidationError, match="^value must be <= "):

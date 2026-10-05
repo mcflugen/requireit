@@ -9,12 +9,14 @@ from collections.abc import Iterator
 from collections.abc import Sized
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version
+from numbers import Real
+from typing import TYPE_CHECKING
 from typing import Any
 
-import numpy as np
-from numpy.typing import ArrayLike
-from numpy.typing import DTypeLike
-from numpy.typing import NDArray
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+    from numpy.typing import DTypeLike
+    from numpy.typing import NDArray
 
 try:
     __version__ = version("requireit")
@@ -208,6 +210,74 @@ def require_between(
     """
     name = name or "value"
 
+    for param, bound in (("a_min", a_min), ("a_max", a_max)):
+        if bound is None:
+            continue
+        if not isinstance(bound, Real):
+            raise ValueError(f"{param} must be a real scalar")
+        if bound != bound:
+            raise ValueError(f"{param} must not be nan")
+
+    if isinstance(value, Real):
+        return _scalar_require_between(
+            value,
+            a_min,
+            a_max,
+            inclusive_min=inclusive_min,
+            inclusive_max=inclusive_max,
+            name=name,
+        )
+    return _array_require_between(
+        value,
+        a_min,
+        a_max,
+        inclusive_min=inclusive_min,
+        inclusive_max=inclusive_max,
+        name=name,
+    )
+
+
+def _scalar_require_between(
+    value: Real,
+    a_min: Real | None = None,
+    a_max: Real | None = None,
+    *,
+    inclusive_min: bool = True,
+    inclusive_max: bool = True,
+    name: str | None = None,
+) -> Real:
+    name = name or "value"
+
+    if value != value:
+        raise ValidationError(f"{name} must not be nan")
+
+    if a_min is not None:
+        valid = value >= a_min if inclusive_min else value > a_min
+        op = ">=" if inclusive_min else ">"
+        if not valid:
+            raise ValidationError(f"{name} must be {op} {a_min}")
+
+    if a_max is not None:
+        valid = value <= a_max if inclusive_max else value < a_max
+        op = "<=" if inclusive_max else "<"
+        if not valid:
+            raise ValidationError(f"{name} must be {op} {a_max}")
+
+    return value
+
+
+def _array_require_between(
+    value: ArrayLike,
+    a_min: float | None = None,
+    a_max: float | None = None,
+    *,
+    inclusive_min: bool = True,
+    inclusive_max: bool = True,
+    name: str | None = None,
+) -> ArrayLike:
+    name = name or "value"
+
+    np = _import_numpy()
     arr = np.asarray(value)
 
     if np.any(np.isnan(value)):
@@ -307,6 +377,7 @@ def require_array(
     """
     name = name or "array"
 
+    np = _import_numpy()
     array = np.asarray(values)
 
     if shape is not None:
@@ -334,6 +405,7 @@ def require_dtype(
     """Validate that an array has a required dtype or can be safely cast to it."""
     name = name or "array"
 
+    np = _import_numpy()
     array = np.asarray(value)
 
     try:
@@ -365,6 +437,7 @@ def require_sorted(value: ArrayLike, *, strict=False, name: str | None = None):
     """Validate that an array is sorted."""
     name = name or "array"
 
+    np = _import_numpy()
     value_array = require_shape(np.asarray(value), ("n",), name=name)
 
     if value_array.size > 1:
@@ -398,6 +471,7 @@ def require_ndim(values: ArrayLike, ndim: int, *, name: str | None = None) -> Ar
 
     require_greater_than_or_equal(ndim, 0, name="ndim")
 
+    np = _import_numpy()
     if np.asarray(values).ndim != ndim:
         raise ValidationError(
             f"{name} must have {ndim} dimension{'s' if ndim > 1 else ''}"
@@ -415,6 +489,7 @@ def require_shape(
     """Validate that an array has the specified shape."""
     name = name or "array"
 
+    np = _import_numpy()
     value_array = np.asarray(value)
 
     if any(type(dim) not in (int, str) and dim is not None for dim in shape):
@@ -458,6 +533,7 @@ def require_like(
     name = name or "array"
     other_name = other_name or "other"
 
+    np = _import_numpy()
     array = np.asarray(values)
     other_array = np.asarray(other)
 
@@ -654,8 +730,15 @@ def require_instance[T](
     return value
 
 
-def import_package(name: str):
+def _import_numpy():
+    return import_package("numpy", hint="Install with 'pip install requireit[numpy]'")
+
+
+def import_package(name: str, hint: str | None = None):
+    hints = [] if hint is None else [hint]
     try:
         return importlib.import_module(name)
     except ModuleNotFoundError:
-        raise ValidationError(f"{name} must be installed") from None
+        raise ValidationError(
+            ". ".join([f"{name} must be installed"] + hints)
+        ) from None

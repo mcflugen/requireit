@@ -22,7 +22,7 @@ def lint(session: nox.Session) -> None:
 def coverage(session: nox.Session) -> None:
     """Run coverage."""
     session.install("coverage", "pytest")
-    session.install("-e", ".")
+    session.install("-e", ".[numpy]")
 
     session.run(
         "coverage",
@@ -100,9 +100,9 @@ def _build(session: nox.Session, dest=".") -> tuple[str, ...]:
 
 def _install_from_path(session: nox.Session, path: str | None = None) -> None:
     if path is None:
-        session.install("-e", ".")
+        session.install("-e", ".[numpy]")
     elif os.path.isfile(path):
-        session.install(path)
+        session.install(f"{path}[numpy]")
     elif os.path.isdir(path):
         session.install(
             "requireit",
