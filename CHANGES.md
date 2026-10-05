@@ -4,6 +4,9 @@
 
 ### Changes
 
+* `require_one_of` and `require_not_one_of` no longer support unhashable values
+  or unhashable items in `allowed` or `forbidden`. These inputs now raise
+  `TypeError`. [#64](https://github.com/mcflugen/requireit/issues/64)
 * NumPy is now optional. Numeric validators support Python real scalars without
   NumPy, and array validation loads NumPy only when needed. Install
   `requireit[numpy]` to use array-like inputs, or array validators.
