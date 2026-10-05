@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Features
+
+* Added `require_members` to combine required, allowed, and forbidden membership
+  constraints. [#63](https://github.com/mcflugen/requireit/issues/63)
+* Added `require_contains_exactly` and `require_does_not_contain`.
+  [#63](https://github.com/mcflugen/requireit/issues/63)
+
 ### Changes
 
 * `require_one_of` and `require_not_one_of` no longer support unhashable values

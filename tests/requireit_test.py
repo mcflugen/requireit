@@ -13,6 +13,8 @@ from requireit import raise_as
 from requireit import require_array
 from requireit import require_between
 from requireit import require_contains
+from requireit import require_contains_exactly
+from requireit import require_does_not_contain
 from requireit import require_dtype
 from requireit import require_greater_than
 from requireit import require_greater_than_or_equal
@@ -24,6 +26,7 @@ from requireit import require_length_between
 from requireit import require_less_than
 from requireit import require_less_than_or_equal
 from requireit import require_like
+from requireit import require_members
 from requireit import require_ndim
 from requireit import require_negative
 from requireit import require_none
@@ -45,7 +48,9 @@ CHECKS_THAT_FAIL = {
     "between-above": partial(require_between, 2, 0, 1),
     "between-below": partial(require_between, -1, 0, 1),
     "contains": partial(require_contains, {"foo", "bar"}, required=("baz",)),
+    "contains_exactly": partial(require_contains_exactly, ("a",), expected=("a", "b")),
     "dtype": partial(require_dtype, [0], "float"),
+    "does_not_contain": partial(require_does_not_contain, {"a", "b"}, forbidden=("b",)),
     "instance": partial(require_instance, 0, float),
     "length-2": partial(require_length, [1, 2, 3], 2),
     "like": partial(require_like, [1, 2, 3], 2),
@@ -77,6 +82,8 @@ CHECKS_THAT_PASS = {
     "require_array": (require_array, np.asarray(0.0)),
     "require_between": (partial(require_between, a_min=-1, a_max=1), (0.0,)),
     "require_contains": (partial(require_contains, required={"bar"}), {"foo", "bar"}),
+    "contain_exactly": (partial(require_contains_exactly, expected=("foo",)), {"foo"}),
+    "does_not_contain": (partial(require_does_not_contain, forbidden=("a",)), {"b"}),
     "require_dtype": (partial(require_dtype, dtype=float), [0.0]),
     "instance": (partial(require_instance, types=int), 0),
     "length": (partial(require_length, length=2), (1, 2)),
@@ -685,6 +692,33 @@ def test_require_contains_empty_always_validates(value):
     assert actual is value
 
 
+@pytest.mark.parametrize("item", ([1], {"a": 1}))
+@pytest.mark.parametrize("unhashable_side", ("collection", "comparison"))
+@pytest.mark.parametrize(
+    "validator,keyword",
+    ((require_contains, "required"), (require_contains_exactly, "expected")),
+)
+def test_contains_rejects_unhashable_items(validator, keyword, unhashable_side, item):
+    value, comparison = (
+        ([item], ()) if unhashable_side == "collection" else ((), [item])
+    )
+    with pytest.raises(TypeError, match="unhashable type"):
+        validator(value, **{keyword: comparison})
+
+
+@pytest.mark.parametrize(
+    "value,required,message",
+    [
+        ({1}, [2, 2], "items must contain 2"),
+        ({1}, [2, "foo", 2], "items must contain 'foo', 2"),
+    ],
+)
+def test_contains_errors(value, required, message):
+    with pytest.raises(ValidationError) as exc:
+        require_contains(value, required=required, name="items")
+    assert str(exc.value) == message
+
+
 def test_import_package_returns_imported_module():
     actual = import_package("requireit")
     assert actual.__name__ == "requireit"
@@ -819,3 +853,118 @@ def test_not_none(value):
     assert require_not_none(value) is value
     with pytest.raises(ValidationError, match="^value must be None"):
         require_none(value)
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    (
+        ({}, {}),
+        ({}, None),
+        ({"foo"}, ("foo",)),
+        ({"foo", "bar"}, {"foo", "bar"}),
+        (("foo", "foo", "bar", "foo"), {"foo", "bar"}),
+    ),
+)
+def test_contains_exactly(value, expected):
+    assert require_contains_exactly(value, expected=expected) is value
+
+
+@pytest.mark.parametrize(
+    "value,expected,message",
+    [
+        ({"foo", "bar"}, {"foo"}, "collection must not contain 'bar'"),
+        ({"foo"}, {"foo", "bar"}, "collection must contain 'bar'"),
+        (
+            {"foo", "bar"},
+            {"bar", "baz"},
+            "collection must contain 'baz'; must not contain 'foo'",
+        ),
+        ({"foo", "car", "bar"}, {"foo"}, "collection must not contain 'bar', 'car'"),
+        ({"foo"}, {"foo", "car", "bar"}, "collection must contain 'bar', 'car'"),
+        (
+            [3, 1, 3, "shared"],
+            [4, 2, 2, "shared"],
+            "collection must contain 2, 4; must not contain 1, 3",
+        ),
+        ([1, 1], None, "collection must not contain 1"),
+    ],
+)
+def test_contains_exactly_errors(value, expected, message):
+    with pytest.raises(ValidationError) as exc:
+        require_contains_exactly(value, expected=expected)
+    assert str(exc.value) == message
+
+
+@pytest.mark.parametrize(
+    "value, forbidden",
+    (
+        ({"foo", "bar"}, ("baz",)),
+        ({"foo", "bar"}, set()),
+        ([], {"foo"}),
+        (("foo",), ("bar",)),
+    ),
+)
+def test_does_not_contain_is_ok(value, forbidden):
+    assert require_does_not_contain(value, forbidden=forbidden) is value
+
+
+@pytest.mark.parametrize(
+    "value, forbidden",
+    (
+        ({"foo", "bar"}, ("bar",)),
+        (["foo", "bar"], {"foo"}),
+    ),
+)
+def test_does_not_contain_is_not_ok(value, forbidden):
+    with pytest.raises(ValidationError, match=""):
+        assert require_does_not_contain(value, forbidden=forbidden)
+
+
+@pytest.mark.parametrize(
+    "value,allowed",
+    [
+        (["foo"], {"foo", "bar"}),
+        (["foo", "bar"], None),
+        ([], set()),
+    ],
+)
+def test_members_allowed(value, allowed):
+    assert require_members(value, allowed=allowed) is value
+
+
+@pytest.mark.parametrize("allowed", (set(), {"bar"}))
+def test_members_disallowed(allowed):
+    with pytest.raises(ValidationError, match="^collection must not contain 'foo'"):
+        require_members(["foo"], allowed=allowed)
+
+
+def test_members_combined_constraints_pass():
+    value = ["name", "email"]
+    assert (
+        require_members(
+            value,
+            required={"name"},
+            allowed={"name", "email", "password"},
+            forbidden={"password"},
+        )
+        is value
+    )
+
+
+def test_members_combined_constraints_error():
+    with pytest.raises(
+        ValidationError,
+        match="fields must contain 'name'; must not contain 'password', 'unknown'",
+    ):
+        require_members(
+            {"email", "password", "unknown"},
+            required={"name", "email"},
+            allowed={"name", "email", "password"},
+            forbidden={"password"},
+            name="fields",
+        )
+
+
+def test_members_overlapping_violations_reported_once():
+    with pytest.raises(ValidationError, match="collection must not contain 'secret'"):
+        require_members(["secret", "secret"], allowed={"name"}, forbidden={"secret"})
